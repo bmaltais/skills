@@ -1,0 +1,38 @@
+# .github/workflows/documentation.yml
+#
+# Substitution tokens: none — this file is provider-agnostic.
+#
+# IMPORTANT: Before committing, verify every action version with:
+#   gh release view --repo actions/checkout           --json tagName -q .tagName
+#   gh release view --repo terraform-docs/gh-actions  --json tagName -q .tagName
+# Never copy version pins without verifying — they go stale.
+#
+# FORK SAFETY: Trigger on push to main, NOT pull_request.
+# When triggered by pull_request, GitHub runs the workflow in the BASE repo context.
+# The `ref: ${{ github.event.pull_request.head.ref }}` then tries to fetch a branch
+# that only exists in the fork → git exits 1. Using push + github.ref avoids this.
+# Docs are regenerated automatically after each merge to main.
+name: Generate terraform docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@__VERIFY_CHECKOUT_VERSION__
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Render terraform docs inside the README.md and push changes back to branch
+        uses: terraform-docs/gh-actions@__VERIFY_TERRAFORM_DOCS_VERSION__
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          git-push: "true"

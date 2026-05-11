@@ -1,0 +1,135 @@
+# ESLZ Artifacts
+
+Use when: completing Step 7 of the upgrade workflow — producing the eight required artifacts.
+
+All file templates live under `skills/eslz-module-upgrade/templates/`.
+Read each template file directly with `read_file` and substitute the tokens listed below.
+Do NOT reconstruct file content from memory — always read the template.
+
+---
+
+## Token substitution table
+
+| Token | Replace with | Example |
+|---|---|---|
+| `__RESOURCE_TYPE__` | Snake-case resource name | `linux_virtual_machine` |
+| `__PROVIDER_NAME__` | Provider name | `azurerm`, `azuread`, `azurestack` |
+| `__PROVIDER_SOURCE__` | Registry source path | `hashicorp/azurerm`, `hashicorp/azuread` |
+| `__PROVIDER_MAJOR__` | Target major version number | `4` |
+| `__ORG__` | GitHub organisation | `canada-ca-terraform-modules` |
+| `__NEXT_VERSION__` | Next semver tag for this module | `v2.1.0` |
+| `__VERIFY_CHECKOUT_VERSION__` | Result of `gh release view --repo actions/checkout --json tagName -q .tagName` | `v6.0.2` |
+| `__VERIFY_SETUP_TERRAFORM_VERSION__` | Result of `gh release view --repo hashicorp/setup-terraform --json tagName -q .tagName` | `v4.0.0` |
+| `__VERIFY_SETUP_TFLINT_VERSION__` | Result of `gh release view --repo terraform-linters/setup-tflint --json tagName -q .tagName` | `v6.2.2` |
+| `__VERIFY_TERRAFORM_DOCS_VERSION__` | Result of `gh release view --repo terraform-docs/gh-actions --json tagName -q .tagName` | `v1.4.1` |
+
+**Always verify action versions with `gh release view` before substituting — never guess or copy from memory.**
+
+---
+
+## Artifact 1 — ESLZ tfvars (`ESLZ/__RESOURCE_TYPE__.tfvars`)
+
+Template: `templates/ESLZ/module.tfvars`
+
+Read the template, substitute `__RESOURCE_TYPE__`, then:
+- Preserve all existing entries verbatim (no reformatting)
+- Add new arguments below existing entries, commented out with a description
+- Every new module input must have at least one commented example
+
+---
+
+## Artifact 2 — ESLZ module block (`ESLZ/__RESOURCE_TYPE__.tf`)
+
+Template: `templates/ESLZ/module.tf`
+
+**This file must always exist.** Callers copy it into their L2 blueprint. Check: `ls ESLZ/*.tf`
+
+Read the template, substitute all tokens, then:
+- Add/remove `variable` blocks to match the module's actual inputs exactly
+- Every variable the `module` block passes must have a corresponding `variable` declaration
+- Set `ref=__NEXT_VERSION__`: determine with `git tag --sort=-v:refname | head -1`, then increment (patch for bug-fix-only, minor for new args)
+
+---
+
+## Artifact 3 — Documentation workflow (`.github/workflows/documentation.yml`)
+
+Template: `templates/.github/workflows/documentation.yml`
+
+Read the template, substitute `__VERIFY_CHECKOUT_VERSION__` and `__VERIFY_TERRAFORM_DOCS_VERSION__`.
+
+**Fork safety**: the template uses `push` trigger with `ref: ${{ github.ref }}`.
+Do NOT change it to `pull_request` — PRs from forks fail because the PR head branch
+only exists in the fork, not the base repo (git exits 1).
+
+---
+
+## Artifact 4 — CI workflow (`.github/workflows/terraform-ci.yml`)
+
+Template: `templates/.github/workflows/terraform-ci.yml`
+
+Read the template, substitute the three `__VERIFY_*_VERSION__` tokens.
+
+No Azure credentials needed — `mock_provider` intercepts all API calls in tests.
+
+---
+
+## Artifact 5 — `providers.tf`
+
+Template: `templates/providers.tf`
+
+Read the template, substitute `__PROVIDER_NAME__` and `__PROVIDER_MAJOR__`.
+
+If the module uses more than one provider (check `.terraform.lock.hcl`), add a block for each.
+Applies to any provider: `azurerm`, `azuread`, `azurestack`, `random`, `tls`, etc.
+
+---
+
+## Artifact 6 — `.tflint.hcl`
+
+Template: `templates/.tflint.hcl`
+
+Copy verbatim — no substitution needed.
+If the file already exists, verify it uses `call_module_type = "local"` (not the removed `module` attribute from tflint < v0.54.0).
+
+---
+
+## Artifact 7 — `.gitignore`
+
+Template: `templates/.gitignore`
+
+Read the existing `.gitignore` before touching anything.
+- If minimal/missing: replace entirely with the template
+- If already comprehensive: merge missing entries
+- **Critical**: `*.tfvars` must appear BEFORE `!ESLZ/*.tfvars` — a negation without a prior ignore rule is a no-op
+
+---
+
+## Artifact 8 — `.gitattributes`
+
+Template: `templates/.gitattributes`
+
+If absent or missing `* text=auto eol=lf`, copy the template.
+Then strip existing CRLF from `.tf` files: `sed -i 's/\r//' *.tf`
+
+---
+
+## Artifact 9 — `tests/upgrade_compat.tftest.hcl`
+
+Template: `templates/tests/upgrade_compat.tftest.hcl`
+
+Read the template, substitute `__RESOURCE_TYPE__`, `__PROVIDER_NAME__`, `__PROVIDER_SOURCE__`, then:
+- Fill in the minimum required fields for the resource type in each `run` block
+- Add the naming assertion matching this module's actual name formula
+- Add one `run` block per argument that changed shape or was renamed during the upgrade
+
+---
+
+## README.md
+
+Not a template file — generated by terraform-docs from module variables.
+
+Rules:
+- Module title (`# module-name`) and one-line description must be **above** `<!-- BEGIN_TF_DOCS -->`
+- terraform-docs erases everything inside the markers on every run
+- Inject markers must be present: `<!-- BEGIN_TF_DOCS -->` and `<!-- END_TF_DOCS -->`
+- Regenerate after all changes: `terraform-docs markdown table --output-file README.md --output-mode inject .`
