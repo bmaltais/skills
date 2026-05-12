@@ -31,6 +31,19 @@ FUNC gather_state(path: str) -> None:
   # Template: templates/.tflint.hcl — copy verbatim, no substitution needed
   # The `module` attribute was removed in tflint >= v0.54.0; use `call_module_type = "local"` instead
   # If .tflint.hcl already exists, verify it uses `call_module_type = "local"` not `module =`
+
+  # CRITICAL: SSC Azure Naming Standard v2.1 — audit name.tf and variables.tf
+  # 1. Read name.tf: check the naming formula is {env4}{serverType3}-{userDefinedString}
+  #    where env = <dept(2)><env(1)><region(1)>  (4 chars, e.g. ScPc)
+  #    and serverType = standard SACM 3-char device type (e.g. CPS, CNR, CSV, CSA, SWx, SLx)
+  # 2. Check variable "serverType" default — NEVER invent codes.
+  #    Common defaults: CPS (generic PaaS), CNR (networking), CSV (Key Vault), CSA (storage)
+  #    For VMs, use SWx (Windows) or SLx (Linux) function codes.
+  #    If unsure, delegate to the ssc-azure-naming skill.
+  # 3. Check variable "env" description — must explain it is <dept(2)><env(1)><region(1)>.
+  # 4. A wrong serverType code is a governance violation that forces a rename (and
+  #    state replacement) later — correct it before writing any other code.
+  # See references/hcl-patterns.md — "SSC name.tf pattern" for the verbatim template.
   # Audit git history BEFORE touching any file
   sh("git log --oneline -20")
   # Look for: "Removed variables", "New naming convention", "Renamed", "Breaking"

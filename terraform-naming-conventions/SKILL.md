@@ -1,22 +1,24 @@
 ---
-name: terraform-naming-conventions
+agents: null
+categories:
+    - software-development
 description: Practical, provider-agnostic guide to naming Terraform resources, local blocks, and modules at scale. Use when designing new modules, reviewing naming consistency, establishing team naming standards, or asking "what should I name this resource?".
-categories: [software-development]
-agents:
-license: MIT
-  - copilot
-  - claude
-tags:
-  - terraform
-  - naming
-  - conventions
-  - iac
-version: 1.0.0
+license: MIT - copilot - claude
 metadata:
-  source: custom
-  scope: global
+    github-path: terraform-naming-conventions
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: 400cf93acccc059b6580bee8b81e4f0368e3aa7f
+    scope: global
+    source: custom
+name: terraform-naming-conventions
+tags:
+    - terraform
+    - naming
+    - conventions
+    - iac
+version: 1.0.0
 ---
-
 # Terraform Resource Naming Conventions
 
 A practical, provider-agnostic guide to naming Terraform resources and local blocks at scale.

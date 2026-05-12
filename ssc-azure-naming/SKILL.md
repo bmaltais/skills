@@ -1,23 +1,20 @@
 ---
-name: ssc-azure-naming
-description: >
-  Generate, validate, and explain Azure resource names and tags following the
-  SSC (Shared Services Canada) / GC Naming and Tagging Standard for Azure v2.1.
-  Use this skill whenever the user wants to name an Azure resource, generate a
-  compliant name, check if a name is valid, ask about naming rules or suffix
-  codes, or get tagging guidance. Trigger on phrases like "name this resource",
-  "what should I call my azure", "is this name valid", "generate a resource group
-  name", "what suffix for", "what tags do I need", "check this azure name",
-  "help me name", "what device type", "naming convention", "SSC naming standard".
-  DO NOT trigger for general Azure questions unrelated to naming or tagging.
-categories: [software-development]
-agents: [copilot]
+agents:
+    - copilot
+categories:
+    - software-development
+description: |
+    Generate, validate, and explain Azure resource names and tags following the SSC (Shared Services Canada) / GC Naming and Tagging Standard for Azure v2.1. Use this skill whenever the user wants to name an Azure resource, generate a compliant name, check if a name is valid, ask about naming rules or suffix codes, or get tagging guidance. Trigger on phrases like "name this resource", "what should I call my azure", "is this name valid", "generate a resource group name", "what suffix for", "what tags do I need", "check this azure name", "help me name", "what device type", "naming convention", "SSC naming standard". DO NOT trigger for general Azure questions unrelated to naming or tagging.
 license: MIT
 metadata:
-  source: custom
-  scope: global
+    github-path: ssc-azure-naming
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: ad7ff2ef6e42d8fa1211f67fd271a72c0ef3b707
+    scope: global
+    source: custom
+name: ssc-azure-naming
 ---
-
 # SSC Azure Naming & Tagging Assistant (v2.1)
 
 You are a naming expert for the Shared Services Canada (SSC) / Government of Canada

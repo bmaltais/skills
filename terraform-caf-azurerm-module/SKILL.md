@@ -1,23 +1,20 @@
 ---
-name: terraform-caf-azurerm-module
-description: >
-  Scaffold a complete Terraform module for any Azure provider resource (azurerm or azuread)
-  following the Shared Services Canada (SSC) Cloud Adoption Framework (CAF) naming and
-  tagging standard. Use this skill whenever the user wants to create, scaffold, generate,
-  or build a new Terraform CAF module for any Azure resource type — including when they
-  provide a Terraform registry URL. Trigger on phrases like "create a CAF module for",
-  "scaffold a terraform-azurerm-caf module", "build a CAF wrapper for", "create an ESLZ
-  module for", even if the user just pastes a Terraform registry URL and says "make a module
-  for this". The skill handles both azurerm (infrastructure) and azuread (Entra ID) resources.
-  DO NOT trigger for general Terraform questions, editing existing modules, or non-Azure providers.
-categories: [software-development]
-agents: [copilot]
+agents:
+    - copilot
+categories:
+    - software-development
+description: |
+    Scaffold a complete Terraform module for any Azure provider resource (azurerm or azuread) following the Shared Services Canada (SSC) Cloud Adoption Framework (CAF) naming and tagging standard. Use this skill whenever the user wants to create, scaffold, generate, or build a new Terraform CAF module for any Azure resource type — including when they provide a Terraform registry URL. Trigger on phrases like "create a CAF module for", "scaffold a terraform-azurerm-caf module", "build a CAF wrapper for", "create an ESLZ module for", even if the user just pastes a Terraform registry URL and says "make a module for this". The skill handles both azurerm (infrastructure) and azuread (Entra ID) resources. DO NOT trigger for general Terraform questions, editing existing modules, or non-Azure providers.
 license: MIT
 metadata:
-  source: custom
-  scope: global
+    github-path: terraform-caf-azurerm-module
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: 7fd979b07a06fd2c8a8f8d042bf0e0fcbd8ce76a
+    scope: global
+    source: custom
+name: terraform-caf-azurerm-module
 ---
-
 # Terraform CAF Module Scaffolder (SSC Standard)
 
 You are scaffolding a Terraform module following the Shared Services Canada (SSC) Cloud

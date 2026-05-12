@@ -1,14 +1,19 @@
 ---
-name: terraform-versioning-advisor
+agents:
+    - copilot
+categories:
+    - software-development
 description: Explain and recommend Terraform versioning best practices for required_providers and required_version in modules versus root stacks. Use this whenever the user asks about Terraform version constraints, provider pinning, whether to use >= or ~>, module compatibility policy, or how to structure versions.tf in reusable modules.
-categories: [software-development]
-agents: [copilot]
 license: MIT
 metadata:
-  source: custom
-  scope: global
+    github-path: terraform-versioning-advisor
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: 08feb1ebad58d37e08783a6a89f0b2de0722fa51
+    scope: global
+    source: custom
+name: terraform-versioning-advisor
 ---
-
 # Terraform Versioning Advisor
 
 Use this skill to give precise, practical guidance for Terraform version constraints in `versions.tf`.

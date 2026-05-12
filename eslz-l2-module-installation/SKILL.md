@@ -1,21 +1,19 @@
 ---
-name: eslz-l2-module-installation
-description: >-
-  Install, wire, and validate a new Terraform CAF module or test resource into an ESLZ L2 blueprint.
-  Use this whenever the user asks to add, deploy, wire, scaffold, or test a new module or resource in
-  an ESLZ L2 folder, especially when they provide a GitHub module URL, a Terraform registry link, or ask
-  for an L2 test resource. Trigger on phrases like "deploy an L2 resource", "add this module to L2",
-  "wire this CAF module into ESLZ", "install this in L2", "create an L2 test resource", or "add this
-  terraform module to the project blueprint". This skill is for integrating modules into an existing ESLZ
-  L2 structure, not for writing a brand new standalone Terraform module from scratch.
-categories: [software-development]
-agents: [copilot]
+agents:
+    - copilot
+categories:
+    - software-development
+description: Install, wire, and validate a new Terraform CAF module or test resource into an ESLZ L2 blueprint. Use this whenever the user asks to add, deploy, wire, scaffold, or test a new module or resource in an ESLZ L2 folder, especially when they provide a GitHub module URL, a Terraform registry link, or ask for an L2 test resource. Trigger on phrases like "deploy an L2 resource", "add this module to L2", "wire this CAF module into ESLZ", "install this in L2", "create an L2 test resource", or "add this terraform module to the project blueprint". This skill is for integrating modules into an existing ESLZ L2 structure, not for writing a brand new standalone Terraform module from scratch.
 license: MIT
 metadata:
-  source: custom
-  scope: global
+    github-path: eslz-l2-module-installation
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: f08e8e2488a8046928bddc16dbf2417fd3553b09
+    scope: global
+    source: custom
+name: eslz-l2-module-installation
 ---
-
 # ESLZ L2 Module Installation Workflow
 
 Use this workflow to add a reusable Terraform module or test resource to an existing ESLZ L2 blueprint.

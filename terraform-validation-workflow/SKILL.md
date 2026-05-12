@@ -1,14 +1,19 @@
 ---
-name: terraform-validation-workflow
+agents:
+    - copilot
+categories:
+    - software-development
 description: Run the standard validation workflow for Terraform module repositories. Trigger when users ask to "validate", "lint", "run checks", "verify Terraform changes", "check this module", or "run terraform validation".
-categories: [software-development]
-agents: [copilot]
 license: MIT
 metadata:
-  source: custom
-  scope: global
+    github-path: terraform-validation-workflow
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: e4ec7e3cb42fa135add61d231a02f6193034c267
+    scope: global
+    source: custom
+name: terraform-validation-workflow
 ---
-
 # Terraform Validation Workflow (Module Repo)
 
 Use this workflow whenever validating changes in a Terraform module repository.

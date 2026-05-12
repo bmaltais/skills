@@ -1,14 +1,19 @@
 ---
-name: terraform-docs-workflow
+agents:
+    - copilot
+categories:
+    - software-development
 description: Run the standard terraform-docs update workflow for Terraform module repositories when users ask to regenerate or update README docs.
-categories: [software-development]
-agents: [copilot]
 license: MIT
 metadata:
-  source: custom
-  scope: global
+    github-path: terraform-docs-workflow
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: 64fab43053a476d057b62222ff94078cfb56079c
+    scope: global
+    source: custom
+name: terraform-docs-workflow
 ---
-
 # Terraform Docs Workflow (Module Repo)
 
 Use this workflow whenever README Terraform documentation needs to be generated or refreshed.

@@ -1,20 +1,19 @@
 ---
-name: eslz-windows-vm-v1-to-v2-migration
-description: >-
-  Migrate a Windows VM from the legacy `windows_VMs` module (list-based, v1) to the modern
-  `windows_VMsV2` module (map-based, v2) in an ESLZ L1 or L2 blueprint, including config translation,
-  state moves, and nic-nsg cleanup — without destroying the VM. Use when a plan shows
-  `azurerm_windows_virtual_machine.VM must be replaced` due to attributes not supported by the old
-  module (e.g. `vtpm_enabled`, `secure_boot_enabled`, `timezone`), or when the user asks to migrate
-  a VM from windows_VMs to windows_VMsV2.
-categories: [software-development]
-agents: [copilot]
+agents:
+    - copilot
+categories:
+    - software-development
+description: Migrate a Windows VM from the legacy `windows_VMs` module (list-based, v1) to the modern `windows_VMsV2` module (map-based, v2) in an ESLZ L1 or L2 blueprint, including config translation, state moves, and nic-nsg cleanup — without destroying the VM. Use when a plan shows `azurerm_windows_virtual_machine.VM must be replaced` due to attributes not supported by the old module (e.g. `vtpm_enabled`, `secure_boot_enabled`, `timezone`), or when the user asks to migrate a VM from windows_VMs to windows_VMsV2.
 license: MIT
 metadata:
-  source: custom
-  scope: global
+    github-path: eslz-windows-vm-v1-to-v2-migration
+    github-ref: refs/tags/v1.0.0
+    github-repo: https://github.com/bmaltais/skills
+    github-tree-sha: d15022dd94b59b846a05bb2b7d2cc73a64299dff
+    scope: global
+    source: custom
+name: eslz-windows-vm-v1-to-v2-migration
 ---
-
 # ESLZ Windows VM v1 → v2 Migration
 
 Migrates an existing Azure VM from the legacy `windows_VMs` module to `windows_VMsV2` without
