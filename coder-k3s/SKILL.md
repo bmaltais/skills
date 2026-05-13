@@ -79,6 +79,45 @@ ssh bernard@mini1 "coder templates list"
 
 ---
 
+## Workspace Storage — What Persists vs What Doesn't
+
+Each workspace has a PVC mounted at `/home/coder`. Only this directory survives a workspace stop/start.
+
+| Location | Persists? | Notes |
+|---|---|---|
+| `/home/coder/**` | ✅ Yes | PVC — survives pod deletion |
+| `~/.local`, `~/.config`, `~/.bashrc` | ✅ Yes | Inside `/home/coder` |
+| System packages (`apt install`) | ❌ No | Container filesystem — gone on stop |
+| `/usr/local/**`, `/opt/**` | ❌ No | Ephemeral container layer |
+
+### Making installed tools persist
+
+**Option 1 — Install to home dir** (immediate, no template change):
+```bash
+# Example: install a binary to ~/.local/bin (persists)
+curl -fsSL https://example.com/install.sh | INSTALL_DIR=/home/coder/.local/bin bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+```
+
+**Option 2 — Add to startup_script** (reinstalls on every start, reproducible):
+```hcl
+startup_script = <<-EOT
+  # Pixi package manager — install once, cached on PVC
+  if [ ! -f /home/coder/.pixi/bin/pixi ]; then
+    curl -fsSL https://pixi.sh/install.sh | bash
+  fi
+  echo 'export PATH="/home/coder/.pixi/bin:$PATH"' >> /home/coder/.bashrc
+  
+  # System tools reinstalled on every start (fast with apt cache)
+  sudo apt-get install -y -qq curl git vim python3-pip
+EOT
+```
+
+**Option 3 — Custom Docker image** (fastest startup, most reproducible):
+Replace `codercom/enterprise-base:ubuntu` with a custom image that has your tools pre-baked.
+
+---
+
 ## Workspace Operations
 
 ```bash
