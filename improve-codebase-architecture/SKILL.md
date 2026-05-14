@@ -35,6 +35,21 @@ This skill is _informed_ by the project's domain model. The domain language give
 
 ## Process
 
+### 0. Repo health check
+
+Before exploring architecture, run:
+
+```
+git status
+git rebase --show-current-patch   (exit code 0 only if rebase is in progress)
+```
+
+If the repo is in a **broken state** (interrupted rebase, unresolved conflicts, stash pile-up), surface it as a **`#0` blocking item** before any architectural candidates. Explain the state and offer to fix it first. Do not proceed with architecture analysis until the repo is clean — broken state masks real friction.
+
+Example blocking item:
+> **#0 (blocking) — Interrupted rebase in progress**
+> `git status` shows "interactive rebase in progress". The last `git pull --rebase` was interrupted and never finished. Other machines cannot receive pushes until this is resolved. Recommend fixing before proceeding.
+
 ### 1. Explore
 
 Read the project's domain glossary and any ADRs in the area you're touching first.
