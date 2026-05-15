@@ -191,3 +191,19 @@ gh pr edit N --add-reviewer <login>
 | Resolving threads before the reviewer sees the fix | Only resolve if the fix is mechanical and obvious |
 | Batching all fixes into one commit | One logical commit per fix makes replies traceable |
 | Forgetting to push before re-requesting review | `git push` first |
+
+---
+
+## Mandatory Done Checklist
+
+Run this after every PR response session. Do **not** mark the task complete until every box is ticked.
+
+```
+[ ] Every unresolved thread has a reply citing a commit SHA
+[ ] All fix commits have been pushed (git push)
+[ ] Threads with mechanical, unambiguous fixes are resolved
+[ ] Review re-requested from every reviewer who left feedback
+    gh pr edit <PR> --add-reviewer <login>
+```
+
+The last step (re-request review) is the most commonly skipped. Reviewers are **not** notified when you reply to a thread — re-requesting review is the only reliable notification.
