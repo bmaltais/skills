@@ -106,6 +106,11 @@ After implementing, work through the acceptance criteria checklist one by one. F
 - Run the relevant command or test to confirm it passes
 - If it fails, fix before proceeding
 
+**CLI flag checklist (mandatory when the brief adds flags):**
+- For every flag named in the brief, verify it exists on **every command** the brief mentions it on.
+- For flags described as optional-value (e.g. `--llm [<agent>]`), test both forms: flag alone (`--flag`) and flag with value (`--flag value`). In cobra, a `String` flag always requires a value — use `flag.NoOptDefVal` to allow bare `--flag`.
+- Run `<binary> <command> --help` for each affected command and confirm the flag appears.
+
 Do not open a PR until all acceptance criteria are met.
 
 ## Phase 6 — Ship
