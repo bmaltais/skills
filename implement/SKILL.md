@@ -113,6 +113,8 @@ If the brief is a bug fix and a correct seam exists — write a failing test fir
 
 If no correct seam exists, document the gap in the PR body.
 
+**Red-phase gate (mandatory for bug fixes):** After writing the test, run it against the *unfixed* code before implementing the fix. The test MUST fail. If it passes before the fix, it does not exercise the broken code path — rewrite the test until it is genuinely red, or explicitly document in the PR body why no behavioral test is achievable (e.g. test requires external state that cannot be reproduced in a unit test). A test that cannot catch a regression is worse than no test — it creates false confidence.
+
 ### Verification loop
 
 After implementing, work through the acceptance criteria checklist one by one. For each:
