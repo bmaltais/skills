@@ -4,8 +4,71 @@ description: Review the current session and suggest improvements based on issues
 argument-hint: "What specific areas or issues should the skill be improved in to make it more effective?"
 ---
 
-Review the current session and suggest improvements based on issues observed during the session. Consider areas such as response accuracy, relevance, user engagement, and any specific feedback provided by users. Provide an actionable plan to enhance the skill's performance and user experience. Then implement the suggested improvements and test the skill to ensure that the changes have a positive impact on its effectiveness.
+# Improve Skill
 
-If the session does not clearly point to a specific skill(s), ask the user for the skill(s) they want to improve.
+Systematically identify friction points from the current session, map them to owning skills, and implement targeted fixes.
 
-If the user passed instructions, treat them as part of the overall context and use them to guide the improvement process. If the instructions are not clear, ask the user for clarification on how they want the skill to be improved.
+## Step 1 — Session Archaeology
+
+Scan the session for friction signals:
+
+| Signal | Example |
+|--------|---------|
+| User correction | "you forgot", "that's wrong", "this keeps happening" |
+| Tool failure | failed replacement, build error, test failure that required repair |
+| Re-reads | reading the same file twice (= stale context or forgotten content) |
+| Skipped steps | plan not updated, tests not run, commit without push |
+| Extra round-trip | clarifying question that revealed an unspoken requirement |
+| Repeated pattern | same fix applied multiple times in one session |
+
+List every signal. Don't filter yet.
+
+## Step 2 — Categorize
+
+For each signal, assign a category:
+
+- `accuracy` — wrong output or misunderstood requirement
+- `coverage` — missing edge case, feature gap
+- `UX` — confusing output or poor error message
+- `reliability` — tool failure, wrong oldString, broken tool call
+- `workflow` — skipped step, wrong ordering, forgotten checklist item
+
+## Step 3 — Prioritize
+
+Rank by **impact × frequency**:
+
+- **High impact + high frequency** → fix immediately
+- **High impact + low frequency** → fix if the change is small
+- **Low impact** → skip
+
+Report the ranking before implementing.
+
+## Step 4 — Identify Owning Skill
+
+For each prioritized issue, name the skill that governs the broken behavior. If multiple skills overlap, pick the most specific one. If no skill owns it, check `~/.copilot/skills/` and `~/.claude/skills/` for candidates.
+
+If the session does not clearly point to a specific skill, ask the user before proceeding.
+
+## Step 5 — Implement
+
+Read the owning skill file before editing it. Make the minimum change that addresses the root cause:
+
+- Add a **mandatory step** for skipped workflow items
+- Add a **guard / check** for reliability issues
+- Add a **concrete example** for UX / accuracy issues
+- Add a **decision rule** for coverage gaps
+
+Label the change type in your explanation (e.g. "adding mandatory step").
+
+## Step 6 — Verify
+
+After editing:
+1. Re-read the changed section of the skill file.
+2. Ask: "Would this change have prevented the observed failure?"
+3. If yes → done. If no → revise.
+
+## Notes
+
+- Fix the root cause, not the symptom. If "plan.md was not updated" is the symptom, the root cause is "no step requires it" — add the step.
+- One skill, one PR's worth of change per invocation. Don't batch improvements across unrelated skills.
+- If the user passed a specific skill or instruction, treat it as the Step 4 answer and skip to Step 5.
