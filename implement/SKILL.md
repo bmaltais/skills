@@ -77,14 +77,28 @@ If the brief is under-specified for any criterion, ask one targeted question. Do
 
 ### Branch
 
-Create a branch before touching any files:
+Create a branch before touching any files. **Always branch from `main` explicitly** — if the current HEAD is not `main`, branching without specifying the base silently inherits ancestor commits that will appear in the PR diff:
 
 ```
+git checkout main
+git pull
 git checkout -b fix/issue-N-short-title    # for bugs
 git checkout -b feat/issue-N-short-title   # for enhancements
 ```
 
 Never commit directly to main.
+
+**Pre-push diff check (mandatory):** Before running `git push`, confirm the PR will contain only your intended commits:
+
+```
+git log --oneline main...HEAD
+```
+
+If any commits appear that you did not author in this session, stop. Rebase off the stale ancestor before pushing:
+
+```
+git rebase --onto main <last-unwanted-commit> HEAD
+```
 
 ### Write the code
 
