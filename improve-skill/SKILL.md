@@ -72,3 +72,4 @@ After editing:
 - Fix the root cause, not the symptom. If "plan.md was not updated" is the symptom, the root cause is "no step requires it" — add the step.
 - One skill, one PR's worth of change per invocation. Don't batch improvements across unrelated skills.
 - If the user passed a specific skill or instruction, treat it as the Step 4 answer and skip to Step 5.
+- **Quality over quantity.** If the session produced no genuine friction — no user corrections, no tool failures, no re-reads, no skipped steps — report that clearly and stop. Do not invent improvements to appear productive. A session with zero skill changes is a good outcome if nothing actually broke.
