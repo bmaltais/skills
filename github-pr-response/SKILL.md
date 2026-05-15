@@ -28,6 +28,18 @@ Triage → implement → reply → re-request review.
 
 ## Step 1 — Fetch All Open Review Threads
 
+**First, read the full comment text verbatim** using `run_in_terminal` (not a subagent — subagents summarise output and lose comment bodies):
+
+```bash
+gh pr view <PR> --comments | cat
+```
+
+This gives you the complete comment text for every review comment and general PR comment. Read this output yourself before acting.
+
+Then fetch thread metadata (IDs needed for replies) via GraphQL — again using `run_in_terminal` directly so output is not summarised:
+
+> ⚠️ Never delegate the "fetch PR comments" step to `execution_subagent`. Subagent summarisation silently discards comment bodies, causing you to implement the wrong fix.
+
 Use GraphQL to get thread IDs, comment body, file path, and line number in one call.
 
 ```bash
