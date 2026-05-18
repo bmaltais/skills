@@ -15,6 +15,23 @@ When exploring the codebase, use the project's domain glossary to get a clear me
 
 Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give up.**
 
+### Inspect observable state FIRST — before writing any code
+
+When a system component (server, browser, process, port) behaves unexpectedly, **query its live state before touching any code**. Writing fixes without observing reality is guessing.
+
+Concrete rule: if you can GET the current state in one command, do it first.
+
+Examples:
+- Browser/CDP misbehaving → `python3 -c "import urllib.request,json; [print(t['type'],'|',t['url']) for t in json.loads(urllib.request.urlopen('http://localhost:9222/json').read())]"` before any code changes
+- Port conflict → `netstat -ano | grep :9222` to identify the owner before killing or reconfiguring
+- Process state → `Get-Process msedge` before assuming it's running or not
+
+### Test new scripts in isolation before wiring into pipelines
+
+When a new script (shell, PS1, batch) is written, run it standalone once and verify it produces the expected state before calling it from other code. A script that "looks correct" and a script that "works" are different things.
+
+Rule: any new external script must be tested standalone with `run script && check expected state` before it is called from the agent pipeline.
+
 ### Ways to construct one — try them in roughly this order
 
 1. **Failing test** at whatever seam reaches the bug — unit, integration, e2e.
