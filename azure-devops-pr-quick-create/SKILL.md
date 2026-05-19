@@ -23,9 +23,11 @@ Use Azure CLI only for PR creation in Azure DevOps repos:
 
 Collect or infer these values:
 - Source branch
-- Target branch (default: `master` unless repo uses another default)
+- Target branch — **ask the user if not explicitly stated**. Do not assume the current base branch is the right target. Default to the repo's default branch (check `az repos show --query defaultBranch`) only if the user has not specified one.
 - PR title
 - PR description/body
+
+**Work item org/project — always ask** before creating a task/work item if the user has not explicitly named an org and project. The git remote org (e.g. `SSC-CTO-ESLZ`) is NOT necessarily the same org where work items live (e.g. `Azure163ent-CloudOperations/Activities`).
 
 ## Fast workflow
 
@@ -64,6 +66,23 @@ If source branch is not pushed, run:
 
 ```bash
 git push -u origin <source-branch>
+```
+
+**Verify target branch exists in ADO** before attempting PR creation:
+
+```bash
+az repos ref list \
+  --organization "https://dev.azure.com/<org>" \
+  --project "<project>" \
+  --repository "<repo>" \
+  --filter "heads/<target-branch>" \
+  --query "[].name" -o json
+```
+
+If the result is `[]`, push the target branch first:
+
+```bash
+git push origin <target-branch>
 ```
 
 ## Step 2: Derive Azure DevOps metadata from origin URL
@@ -212,6 +231,23 @@ az repos pr create \
   --description "<description>" \
   --output json
 ```
+
+## Changing a PR's target branch after creation
+
+`az repos pr update` does **not** support `--target-branch`. Use the REST API instead:
+
+```bash
+az rest \
+  --method PATCH \
+  --uri "https://dev.azure.com/<org>/<project>/_apis/git/repositories/<repo>/pullRequests/<pr-id>?api-version=7.1" \
+  --headers "Content-Type=application/json" \
+  --body '{"targetRefName": "refs/heads/<new-target>"}' \
+  --resource 499b84ac-1321-427f-aa17-267ca6975798
+```
+
+## Cross-org work item linking
+
+`az repos pr work-item add` only works when the PR repo and the work item are in the **same ADO org**. If they are in different orgs, the link must be added manually in the PR UI.
 
 ## Safety and behavior notes
 
