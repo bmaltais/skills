@@ -35,6 +35,16 @@ Collect or infer these values:
 4. Create PR with `az repos pr create`.
 5. Return PR id and web URL.
 
+## Step 0: Ensure azure-devops CLI extension is installed
+
+Before any `az repos` or `az boards` command, verify the extension is present:
+
+```bash
+az extension show --name azure-devops &>/dev/null || az extension add --name azure-devops --yes
+```
+
+This is required on every machine where the extension has not been explicitly installed.
+
 ## Step 1: Repo preflight
 
 Run:
@@ -127,12 +137,62 @@ Always return:
 - Source -> target branch
 - Web URL
 
+## Step 6 (optional): Link a work item to the PR
+
+To look up an existing PR by ID (omit `--project` — it is not a valid flag for `az repos pr show`):
+
+```bash
+az repos pr show \
+  --organization "https://dev.azure.com/<org>" \
+  --id <pr-id> \
+  --output json
+```
+
+To link a work item to a PR, use `az repos pr work-item add` (NOT `az repos pr update --work-items`):
+
+```bash
+az repos pr work-item add \
+  --organization "https://dev.azure.com/<org>" \
+  --id <pr-id> \
+  --work-items <work-item-id> \
+  --output json
+```
+
+To create a work item (Task) as a child of an existing Epic:
+
+```bash
+# 1. Create the Task
+az boards work-item create \
+  --organization "https://dev.azure.com/<org>" \
+  --project "<project>" \
+  --type "Task" \
+  --title "<title>" \
+  --description "<description>" \
+  --output json
+
+# 2. Set parent Epic (use the Task id returned above)
+az boards work-item relation add \
+  --organization "https://dev.azure.com/<org>" \
+  --id <task-id> \
+  --relation-type "parent" \
+  --target-id <epic-id> \
+  --output json
+
+# 3. Link Task to PR
+az repos pr work-item add \
+  --organization "https://dev.azure.com/<org>" \
+  --id <pr-id> \
+  --work-items <task-id> \
+  --output json
+```
+
 ## Copy/paste helper block
 
 Use this helper when the user asks for a quick PR and values are already known:
 
 ```bash
 set -e
+az extension show --name azure-devops &>/dev/null || az extension add --name azure-devops --yes
 source ~/dotfiles/sp/163ent-devops.sp || true
 if [[ -z "$AZURE_DEVOPS_EXT_PAT" && -n "$TF_VAR_devops_user_pat_163ent" ]]; then
   export AZURE_DEVOPS_EXT_PAT="$TF_VAR_devops_user_pat_163ent"
