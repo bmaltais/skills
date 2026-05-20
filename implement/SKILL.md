@@ -108,6 +108,7 @@ git rebase --onto main <last-unwanted-commit> HEAD
 - Run the project's type checker and linter as you go; fix errors immediately
 - **After any full-file write or large rewrite**, run the build immediately before proceeding — catches unused imports, syntax errors, and type mismatches while context is fresh
 - **When adding side-effects to a widely-called function** (e.g. Load, Init, New), run the full test suite immediately — these functions are exercised by tests using fake environments (temp HOME, mock FS) and side-effects like auto-detection or network calls will break them
+- **Never use `sed`, `awk`, or bash string manipulation to modify source code** — always use the `edit` tool (or `write` for full rewrites). `sed` is acceptable for querying (grep, line counts) but not for code changes: it cannot validate replacements were unique, risks partial matches, and produces cascading errors (renamed functions clashing, orphaned references)
 
 ### Tests
 
