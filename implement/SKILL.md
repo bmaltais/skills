@@ -106,6 +106,8 @@ git rebase --onto main <last-unwanted-commit> HEAD
 - Respect the **out of scope** list — do not touch adjacent things
 - Follow the project's existing conventions (formatting, naming, test style)
 - Run the project's type checker and linter as you go; fix errors immediately
+- **After any full-file write or large rewrite**, run the build immediately before proceeding — catches unused imports, syntax errors, and type mismatches while context is fresh
+- **When adding side-effects to a widely-called function** (e.g. Load, Init, New), run the full test suite immediately — these functions are exercised by tests using fake environments (temp HOME, mock FS) and side-effects like auto-detection or network calls will break them
 
 ### Tests
 
