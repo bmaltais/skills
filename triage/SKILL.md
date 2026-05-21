@@ -60,14 +60,6 @@ Show counts and a one-line summary per issue. Let the maintainer pick.
 
 ## Triage a specific issue
 
-0. **Sync the codebase.** Before exploring any code, ensure you are on the default branch with the latest commits:
-
-   ```bash
-   git checkout main && git pull
-   ```
-
-   Never analyse a feature branch — it may contain changes not yet in main and will produce stale or misleading codebase context.
-
 1. **Gather context.** Read the full issue (body, comments, labels, reporter, dates). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs in the area. Read `.out-of-scope/*.md` and surface any prior rejection that resembles this issue.
 
 2. **Recommend.** Tell the maintainer your category and state recommendation with reasoning, plus a brief codebase summary relevant to the issue. Wait for direction.
@@ -77,15 +69,6 @@ Show counts and a one-line summary per issue. Let the maintainer pick.
 4. **Grill (if needed).** If the issue needs fleshing out, run a `/grill-with-docs` session.
 
 5. **Apply the outcome:**
-
-   > **Posting comments:** `gh issue comment` interprets backticks and special shell characters in `--body '...'` strings. Always write the body to a temp file and use `--body-file`:
-   > ```bash
-   > cat > /tmp/triage-comment.md << 'ENDBODY'
-   > ...comment text...
-   > ENDBODY
-   > gh issue comment N --body-file /tmp/triage-comment.md
-   > ```
-
    - `ready-for-agent` — post an agent brief comment ([AGENT-BRIEF.md](AGENT-BRIEF.md)).
    - `ready-for-human` — same structure as an agent brief, but note why it can't be delegated (judgment calls, external access, design decisions, manual testing).
    - `needs-info` — post triage notes (template below).
