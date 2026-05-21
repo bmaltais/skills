@@ -168,6 +168,29 @@ gh issue edit N --remove-label ready-for-agent
 
 Do not close the issue — the PR's `Closes #N` will close it automatically on merge.
 
+## Phase 8 — Address Review Feedback
+
+When the user asks to address feedback on an open PR, fetch **both** comment types:
+
+```bash
+# 1. Inline review comments (line-level, from automated reviewers and humans)
+gh api repos/{owner}/{repo}/pulls/{N}/comments \
+  --jq '.[] | {path: .path, line: .line, body: .body}'
+
+# 2. Conversation-level comments (general PR discussion)
+gh pr view N --comments --json comments
+```
+
+> **Important:** `gh pr view N --comments` does NOT return inline review comments.
+> It only returns top-level issue comments. Always use the `gh api` call above
+> for line-level feedback (e.g. Copilot automated reviews).
+
+Work through each inline comment:
+1. Locate the flagged code using `path` + `line` from the comment
+2. Apply the fix in the branch (never force-push over a merged review)
+3. Run `go build ./... && go test ./... && go vet ./...` (or equivalent) after all fixes
+4. Commit with `fix: address PR #N review feedback` and push
+
 ## Key Invariants
 
 - NEVER implement from the issue body alone — find the agent brief comment first
