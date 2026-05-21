@@ -132,6 +132,16 @@ After implementing, work through the acceptance criteria checklist one by one. F
 
 Do not open a PR until all acceptance criteria are met.
 
+### Simplify before committing (mandatory)
+
+Before running `git commit`, run the simplify skill on the uncommitted changes:
+
+```
+/simplify
+```
+
+Apply all fixes the simplify skill proposes. Only then commit. This catches code-quality issues before they become PR review comments.
+
 ## Phase 6 — Ship
 
 ```
