@@ -68,6 +68,16 @@ If source branch is not pushed, run:
 git push -u origin <source-branch>
 ```
 
+**If `git push` fails with "Authentication failed"**, the remote URL likely contains an embedded JWT token (common in repos cloned by automation). Use the PAT via Basic auth header instead:
+
+```bash
+# Ensure PAT is set (see Step 3 below, run it early if needed)
+git -c "http.extraHeader=Authorization: Basic $(echo -n ":$AZURE_DEVOPS_EXT_PAT" | base64 -w0)" \
+  push -u origin <source-branch>
+```
+
+Detect this situation by inspecting `git remote -v` output: if the URL looks like `https://:eyJ...@dev.azure.com/...`, it contains an embedded token that may be expired or scoped only for read. Always have the PAT available before attempting the push.
+
 **Verify target branch exists in ADO** before attempting PR creation:
 
 ```bash
