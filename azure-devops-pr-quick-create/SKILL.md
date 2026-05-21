@@ -62,6 +62,15 @@ Confirm:
 - Branch is pushed to origin
 - Remote is Azure DevOps (`dev.azure.com`)
 
+**MANDATORY: Commit all local changes before pushing.**
+If `git status` shows any modified, added, or deleted files, stage and commit them first:
+
+```bash
+git add -A && git commit -m "<descriptive message>"
+```
+
+Never push a branch with uncommitted changes — they will be silently excluded from the PR.
+
 If source branch is not pushed, run:
 
 ```bash
