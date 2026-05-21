@@ -144,6 +144,10 @@ Apply all fixes the simplify skill proposes. Only then commit. This catches code
 
 ## Phase 6 — Ship
 
+**GATE — simplify must run before any `git add`.**
+If `/simplify` was not already invoked in this session, run it now and apply all
+high-confidence fixes before proceeding. Do not skip this even for small changes.
+
 ```
 git add <specific files>
 git commit -m "<type>: <summary from brief>"
