@@ -60,6 +60,21 @@ Read the owning skill file before editing it. Make the minimum change that addre
 
 Label the change type in your explanation (e.g. "adding mandatory step").
 
+### Beyond SKILL.md edits — scripts and reference files
+
+When a skill involves multi-step shell workflows, also consider creating supporting artifacts alongside the SKILL.md:
+
+- **Helper scripts** (`scripts/` subdirectory next to SKILL.md) — create a script when:
+  - Steps are repeated across many sessions (amortises boilerplate)
+  - Variables must persist across terminal invocations (script keeps them in scope)
+  - An operation is destructive and needs a guaranteed cleanup/restore step (use `trap`)
+  - The manual steps are error-prone enough that a single-command invocation materially reduces risk
+- **Reference files** (`docs/` or inline in SKILL.md) — add a cheat-sheet or status-code table when:
+  - The skill relies on an external API with non-obvious field values (e.g. policy evaluation statuses)
+  - The same lookup (org/project IDs, endpoint formats) is performed every session
+
+When adding scripts: make them executable (`chmod +x`), self-documenting (usage comment at top), and reference them from the "Preferred approach" section at the top of SKILL.md so the agent reaches for the script before the manual steps.
+
 ## Step 6 — Verify
 
 After editing:
