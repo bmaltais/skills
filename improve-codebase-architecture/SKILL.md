@@ -1,11 +1,6 @@
 ---
 name: improve-codebase-architecture
 description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.
-categories: [software-development]
-agents: [pi, hermes, claude, copilot]
-metadata:
-  source: custom
-  scope: global
 ---
 
 # Improve Codebase Architecture
@@ -35,21 +30,6 @@ This skill is _informed_ by the project's domain model. The domain language give
 
 ## Process
 
-### 0. Repo health check
-
-Before exploring architecture, run:
-
-```
-git status
-git rebase --show-current-patch   (exit code 0 only if rebase is in progress)
-```
-
-If the repo is in a **broken state** (interrupted rebase, unresolved conflicts, stash pile-up), surface it as a **`#0` blocking item** before any architectural candidates. Explain the state and offer to fix it first. Do not proceed with architecture analysis until the repo is clean — broken state masks real friction.
-
-Example blocking item:
-> **#0 (blocking) — Interrupted rebase in progress**
-> `git status` shows "interactive rebase in progress". The last `git pull --rebase` was interrupted and never finished. Other machines cannot receive pushes until this is resolved. Recommend fixing before proceeding.
-
 ### 1. Explore
 
 Read the project's domain glossary and any ADRs in the area you're touching first.
@@ -64,32 +44,30 @@ Then use the Agent tool with `subagent_type=Explore` to walk the codebase. Don't
 
 Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? A "yes, concentrates" is the signal you want.
 
-### 2. Present candidates
+### 2. Present candidates as an HTML report
 
-Present a numbered list of deepening opportunities. For each candidate:
+Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Open it for the user — `xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows — and tell them the absolute path.
+
+The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals — use Mermaid when relationships are graph-shaped (call graphs, dependencies, sequences), and hand-built divs/SVG when you want something more editorial (mass diagrams, cross-sections, collapse animations). Each candidate gets a **before/after visualisation**. Be visual.
+
+For each candidate, the same template as before, but rendered as a card:
 
 - **Files** — which files/modules are involved
 - **Problem** — why the current architecture is causing friction
 - **Solution** — plain English description of what would change
-- **Benefits** — explained in terms of locality and leverage, and also in how tests would improve
+- **Benefits** — explained in terms of locality and leverage, and how tests would improve
+- **Before / After diagram** — side-by-side, custom-drawn, illustrating the shallowness and the deepening
+- **Recommendation strength** — one of `Strong`, `Worth exploring`, `Speculative`, rendered as a badge
+
+End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
 
 **Use CONTEXT.md vocabulary for the domain, and [LANGUAGE.md](LANGUAGE.md) vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
 
-- **ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly (e.g. _"contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
+**ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the card (e.g. a warning callout: _"contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
 
-Do NOT propose interfaces yet. Ask the user: "Which of these would you like to explore?"
+See [HTML-REPORT.md](HTML-REPORT.md) for the full HTML scaffold, diagram patterns, and styling guidance.
 
-### Example: Decomposing a monolithic linter
-
-A common deepening opportunity is a large file that bundles many independent checks (e.g. `lint.py` at 439 lines). The pattern:
-
-1. Identify the independent concerns (file naming, frontmatter, tags, headings, links, orphans, etc.)
-2. Create a `rules/` package with each concern as a module
-3. Define a thin `Rule` interface (`name: str`, `run(path, page, ...) -> list[str]`)
-4. Provide a `run_all()` helper that iterates rules and collects results
-5. Rewrite the orchestrator (`lint.py`) to be thin — just a loop calling `run_all()`
-
-Result: each rule is independently testable, adding a new check is just adding a file, and the interface is tiny. See [references/linter-decomposition.md](references/linter-decomposition.md) for the full walkthrough.
+Do NOT propose interfaces yet. After the file is written, ask the user: "Which of these would you like to explore?"
 
 ### 3. Grilling loop
 
@@ -101,14 +79,3 @@ Side effects happen inline as decisions crystallize:
 - **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
 - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones. See [ADR-FORMAT.md](../grill-with-docs/ADR-FORMAT.md).
 - **Want to explore alternative interfaces for the deepened module?** See [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md).
-
-### 4. Implementation
-
-When the user approves one or more candidates (including "fix them all"):
-
-1. **Write the plan first** — post a numbered list of concrete file operations (create X, edit Y, delete Z) before touching any file. Keep it short: one line per step.
-2. **Get implicit or explicit buy-in** — if the user says "do it" or "fix them all", proceed immediately without asking again. Only pause if the plan involves deleting files or breaking public interfaces.
-3. **Execute step by step** — complete each step, mark it done, move to the next.
-4. **Validate at the end** — run a syntax check (or equivalent) on every modified file and report results. Do not skip this.
-
-**Do not narrate while thinking.** Write the plan, then act. Avoid "I will now…" preamble between steps.
