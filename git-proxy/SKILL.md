@@ -25,10 +25,27 @@ behavior looks like within those fences.
 - Reference the task or issue if one exists.
 
 ## Push
+- **Pull before you commit to any shared repo** (including skills repos like
+  `~/.copilot/skills`, `~/.claude/skills`, `~/.hermes/skills`). Run
+  `git pull --rebase` first; if it fails due to unstaged changes, stash
+  first (`git stash && git pull --rebase && git stash pop`). A push rejection
+  after a commit is much harder to recover from than a pre-commit pull.
 - Run tests first. If tests aren't present, say so explicitly.
 - Never force-push to a protected branch. The pre-call hook will block this
   even if you try.
 - Prefer `--force-with-lease` over `--force` on feature branches.
+
+## Diverged branch recovery
+When a push is rejected because local and remote have diverged:
+1. Check what you have: `git log --oneline origin/HEAD..HEAD` (your commits)
+   and `git log --oneline HEAD..origin/HEAD` (remote-only commits).
+2. If your commits are small and isolated, prefer **rebase**:
+   `git fetch origin && git rebase origin/main`. Resolve conflicts, then push.
+3. **Do NOT use `git reset --hard origin/main`** to "start over" — if your
+   commits added new tracked files, the hard reset will delete them from the
+   working tree. Use `git stash` (or copy the files elsewhere) before any
+   hard reset if you need to keep new files.
+4. After a successful rebase/merge, push normally.
 
 ## Branch / merge / rebase
 - Rebase feature branches on `main` before opening a PR.
