@@ -120,6 +120,19 @@ Squash-merge the PR so the feature lands as a single commit on main:
 gh pr merge {N} --squash
 ```
 
+If the command fails with "Pull Request is not mergeable", check the actual merge state:
+
+```bash
+gh pr view {N} --json mergeStateStatus,mergeable,state
+```
+
+If `mergeable` is `MERGEABLE` and `mergeStateStatus` is `CLEAN`, GitHub's API
+had a transient inconsistency after the push. Wait 3–5 seconds and retry:
+
+```bash
+sleep 5 && gh pr merge {N} --squash
+```
+
 Wait for the merge to complete before proceeding.
 
 ## Phase 7 — Clean Up
