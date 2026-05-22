@@ -110,6 +110,11 @@ git rebase --onto main <last-unwanted-commit> HEAD
 - **When adding side-effects to a widely-called function** (e.g. Load, Init, New), run the full test suite immediately — these functions are exercised by tests using fake environments (temp HOME, mock FS) and side-effects like auto-detection or network calls will break them
 - **Never use `sed`, `awk`, or bash string manipulation to modify source code** — always use the `edit` tool (or `write` for full rewrites). `sed` is acceptable for querying (grep, line counts) but not for code changes: it cannot validate replacements were unique, risks partial matches, and produces cascading errors (renamed functions clashing, orphaned references)
 
+- **Go unexport refactor (bulk rename exported → unexported functions):** Use `vscode_renameSymbol` per function, or make each rename individually in the edit tool. After unexporting, run `go build ./...` immediately. Do not attempt bulk sed renames. Also update every `_test.go` file in the same package:
+  1. For each test file that calls unexported functions, change its package declaration from `package X_test` to `package X` and remove the self-import (`"github.com/.../X"`).
+  2. Before doing this, audit whether any test file that stays as `package X_test` uses a helper function (e.g. `writeFile`, `emptyState`) that was defined in a file you just moved to `package X`. If so, either move the helper into a new `_test.go` file that stays in `package X_test`, or duplicate it. Failing to do this produces "undefined: writeFile" compile errors only in the external-package tests.
+  3. After the package declaration change, also scan for type and constant references like `skill.MyType{...}` and `skill.SomeConst` — these are not function calls and will be missed if you only look for function-call patterns.
+
 ### Tests
 
 If the brief is a bug fix and a correct seam exists — write a failing test first, then fix it (red-green). If it is an enhancement, write tests that verify the new behavior described in the acceptance criteria.
