@@ -121,6 +121,13 @@ If the brief is a bug fix and a correct seam exists — write a failing test fir
 
 If no correct seam exists, document the gap in the PR body.
 
+**Test isolation (mandatory before writing any new test):** Before writing the first test, scan 2–3 existing `*_test.go` files in the same package for environment isolation patterns, then apply the same pattern to every new test:
+- `t.Setenv("HOME", t.TempDir())` — isolates config/state that resolves via `os.UserHomeDir()`
+- `t.TempDir()` for writable directories — auto-cleaned after the test
+- Any `os.Setenv` / mock FS setup the existing tests use
+
+If any existing test in the package uses `t.Setenv("HOME", ...)`, all new tests in that file must use it too — even if the code path under test does not *currently* write to HOME. This prevents surprises when the implementation evolves.
+
 **Red-phase gate (mandatory for bug fixes):** After writing the test, run it against the *unfixed* code before implementing the fix. The test MUST fail. If it passes before the fix, it does not exercise the broken code path — rewrite the test until it is genuinely red, or explicitly document in the PR body why no behavioral test is achievable (e.g. test requires external state that cannot be reproduced in a unit test). A test that cannot catch a regression is worse than no test — it creates false confidence.
 
 ### Verification loop
