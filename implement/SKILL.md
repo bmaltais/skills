@@ -71,6 +71,10 @@ Do not start implementing until exploration is complete.
 
 Before writing code, map each acceptance criterion to a concrete implementation step. State the plan in one short paragraph or bullet list — this is for your own orientation, not a user-facing document. Identify any risks or ambiguities and surface them to the maintainer now, before making changes.
 
+**The final step in every plan must be:** `Run /simplify on all changes before committing`
+
+When tracking progress with `manage_todo_list`, include this as an explicit todo item. It must appear in the list and be marked `completed` before any `git add`.
+
 If the brief is under-specified for any criterion, ask one targeted question. Do not ask more than needed — if you can make a reasonable judgment call, make it and document it in the PR body.
 
 ## Phase 5 — Implement
@@ -227,6 +231,8 @@ Work through each inline comment:
 - ALWAYS remove `ready-for-agent` from the issue when the PR is open
 - ALWAYS run type checker and linter before pushing — fix errors, never suppress
 - ALWAYS surface ambiguities in Phase 4, not mid-implementation
+- ALWAYS run `/simplify` as the final step of Phase 4's plan before any `git add` — it must be a tracked todo item, not a reminder
+- NEVER commit without `/simplify` having run in the same session
 
 ## Vocabulary
 
