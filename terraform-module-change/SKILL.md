@@ -65,6 +65,26 @@ Read the **Arguments Reference** section carefully. Note:
 
 Edit only the target resource block(s). Do not touch unrelated code.
 
+**When the change introduces a `count` or conditional `for_each` on a module:**
+
+After implementing the guard, grep the entire repo for every reference to that
+module key and verify each one is safe when the key is absent:
+
+```bash
+grep -rn 'module\.<name>\["<key>"\]' .
+```
+
+Every reference outside the module itself **must** be wrapped in `try()`:
+```hcl
+# WRONG — will error when "devops" key is absent from for_each
+object_id = module.app_registrationsV2["devops"].aad_sp_object.object_id
+
+# CORRECT
+object_id = try(module.app_registrationsV2["devops"].aad_sp_object.object_id, null)
+```
+
+Do not proceed to Step 4 until all callers are guarded.
+
 **Backward compatibility rules:**
 - Never remove or rename existing arguments.
 - Never change a `count`/`for_each` expression unless the user explicitly asks.
@@ -131,8 +151,8 @@ locals {
   resource_count = var.feature_enabled ? 1 : 0
 }
 
-output "resource_count"    { value = local.resource_count }
-output "computed_trigger"  { value = local.computed_trigger }
+output "resource_count"   { value = local.resource_count }
+output "computed_trigger" { value = local.computed_trigger }
 ```
 
 **Rules for the fixture `main.tf`:**
@@ -140,6 +160,7 @@ output "computed_trigger"  { value = local.computed_trigger }
 - No `provider` blocks, no `resource` blocks — only `variable`, `locals`, `output`.
 - Each `local` must include a comment naming the source file it mirrors.
 - Keep it minimal: only the logic under test, nothing else.
+- Write output declarations in **fmt-canonical format** (no extra alignment spaces): `output "foo" { value = local.foo }`. `terraform fmt` collapses aligned spacing; pre-fmt content as `oldString` will fail to match if you edit the fixture again later.
 
 ### .tftest.hcl template
 
@@ -262,6 +283,11 @@ terraform fmt -recursive
 # 3. Lint
 tflint --recursive
 ```
+
+> **Guard — editing fixture files after fmt:** `terraform fmt` rewrites whitespace
+> in output and argument blocks. If you need to make further edits to any fixture
+> file after running fmt, **re-read it first** — use the post-fmt content as
+> `oldString`, not the content you originally wrote.
 
 **Handling tflint warnings:**
 - Fix warnings introduced by **your changes** immediately.
