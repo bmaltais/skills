@@ -38,6 +38,49 @@ Read the target `.tf` file **before** making any changes.
 - Note all existing arguments, `count`/`for_each` expressions, `depends_on`, and
   `lifecycle` blocks — these must be preserved exactly.
 
+**When your plan introduces a NEW `variable` + `module` or `variable` + `resource`
+block (not editing an existing one):** scan for related existing patterns before
+implementing.
+
+```bash
+# Find module calls using the same source
+grep -rn 'source.*<module_fragment>' *.tf
+
+# Find for_each patterns over similarly-named variables
+grep -rn 'for_each.*var\.' *.tf
+```
+
+If you find a semantically related `variable + module` or `variable + resource`
+already in the codebase, **present the extend-vs-add tradeoff to the user and
+wait for a choice before writing any code**:
+
+| | Extend existing variable | Add new variable |
+|---|---|---|
+| Pros | One variable to learn; no new module call | Clean separation; independent defaults |
+| Cons | Callers must know new optional fields; output may need `sensitive = true` | Duplication if underlying module/resource is identical |
+
+**Add new** is correct when: the new entries have fundamentally different defaults
+or lifecycle rules that would silently break existing entries if applied broadly.
+
+**Extend existing** is correct when: the new behaviour is purely opt-in (presence
+of a field triggers it; absence leaves existing entries unchanged), the underlying
+resource/module call is identical, and the variable is already `type = any`.
+
+---
+
+**If the plan or implementation will create new files in a subdirectory** (e.g.
+`ESLZ/`, `tests/fixtures/`, `modules/`), verify that directory convention exists
+in the repo before referencing it:
+
+```bash
+ls -1d */ 2>/dev/null   # list top-level directories in the module root
+```
+
+- If the directory doesn't exist yet and you intend to create it, say so
+  explicitly in the plan: _"we will create `ESLZ/` as part of this change"_.
+- Do not silently assume a directory exists because it appears in a sibling repo
+  or module. Blueprint repos and module repos follow different conventions.
+
 ---
 
 ## Step 2 — Fetch provider documentation
@@ -282,6 +325,11 @@ terraform fmt -recursive
 
 # 3. Lint
 tflint --recursive
+
+# 4. Check for deprecation warnings
+#    terraform validate surfaces provider deprecations that tests and fmt miss.
+#    Run it from the module root with a dummy vars file if required_vars are present.
+terraform validate 2>&1 | grep -i 'deprecat\|warning' || true
 ```
 
 > **Guard — editing fixture files after fmt:** `terraform fmt` rewrites whitespace
@@ -295,6 +343,11 @@ tflint --recursive
   but do not modify unrelated code.
 - Never add `// nolint` or `.tflint.hcl` ignore rules to silence new warnings
   without the user's approval.
+
+**Handling deprecation warnings from `terraform validate`:**
+- Any `Warning: Argument is deprecated` line that references a file you changed
+  **must** be fixed before proceeding to Step 7.
+- Common azuread deprecation: `end_date_relative` → use `end_date = timeadd(timestamp(), duration)` **plus** `lifecycle { ignore_changes = [end_date] }`. The lifecycle block is mandatory — without it, Terraform detects a diff on every plan because `timestamp()` advances each run.
 
 ---
 
@@ -315,8 +368,24 @@ date in `YYYYMMDD.N` format (increment `.N` if multiple releases on the same day
 **Rules:**
 - Newest entry at the top.
 - One bullet per logical change (not per file edited).
-- Mention the affected `.tf` file or resource type so readers can find the change.
-- Do not mention internal refactors, fmt, or tflint fixes unless the user asks.
+- **Avoid sub-release churn within a single session.** If the feature evolves through multiple iterations in one session (e.g. the approach pivots or the user asks for a follow-on fix), consolidate all changes into a single entry that describes the final delivered state — do not create `.0`, `.1`, `.2`, `.3` entries. The release notes should read as if the work was done in one pass. Only create a new numbered entry if the changes are genuinely independent and the user could deploy them separately.
+
+**If an ADO work item ID is in context** (mentioned in the session, linked in the
+user's initial request, visible in a previous comment, or inferred from a WI URL),
+post a summary comment to the work item after RELEASE_NOTES are updated:
+
+```bash
+SKILL_DIR="/home/bernard/.copilot/skills/azure-devops-work-item-comment"
+echo "<p>Implementation complete: ...</p>" | bash "$SKILL_DIR/scripts/add_comment.sh" <WI_ID>
+```
+Include: what changed, key design decisions made (and rejected), test count, and
+release note entry. This keeps the WI as the authoritative record of intent — not
+just the initial plan comments.
+
+**If the implementation also required a design pivot** (the user asked to change
+approach mid-way), call out the pivot explicitly: explain what the original
+approach was, what changed, and why — do not leave stale plan comments as the
+last record of intent.
 
 ---
 
