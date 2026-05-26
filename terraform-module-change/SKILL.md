@@ -372,7 +372,10 @@ date in `YYYYMMDD.N` format (increment `.N` if multiple releases on the same day
 
 **If an ADO work item ID is in context** (mentioned in the session, linked in the
 user's initial request, visible in a previous comment, or inferred from a WI URL),
-post a summary comment to the work item after RELEASE_NOTES are updated:
+post a summary comment to the work item after RELEASE_NOTES are updated. This
+applies to every edit to RELEASE_NOTES — including follow-on changes made later
+in the same session (e.g. design pivots, simplifications, feature removals). Do
+not wait for the user to ask; post proactively each time the release notes change.
 
 ```bash
 SKILL_DIR="/home/bernard/.copilot/skills/azure-devops-work-item-comment"
