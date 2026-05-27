@@ -110,6 +110,35 @@ which options are available in the target version.
 
 ---
 
+## Step 2b — Post plan to ADO work item (mandatory when a WI ID is in context)
+
+**Before writing any code**, post the implementation plan as a discussion comment
+on the ADO work item. This ensures the plan is reviewed and recorded *before*
+changes land in the repo.
+
+The comment must include:
+- **Goal** — one-sentence summary of what will change
+- **Design decisions** — variable naming, pattern choice, defaults, backward compat strategy
+- **File layout** — which files will be created/modified
+- **Test plan** — what the fixture will cover (list of test names)
+- **Example usage** — a representative tfvars snippet showing the new feature
+
+```bash
+SKILL_DIR="/home/bernard/.copilot/skills/azure-devops-work-item-comment"
+cat <<'EOF' | bash "$SKILL_DIR/scripts/add_comment.sh" <WI_ID>
+<h2>Implementation Plan — <feature></h2>
+<h3>Goal</h3><p>...</p>
+<h3>Design Decisions</h3><ul><li>...</li></ul>
+<h3>File Layout</h3><ul><li>...</li></ul>
+<h3>Test Plan</h3><ol><li>...</li></ol>
+<h3>Example Usage</h3><pre>...</pre>
+EOF
+```
+
+Do **not** proceed to Step 3 until the plan comment is posted successfully.
+
+---
+
 ## Step 3 — Implement the change
 
 Edit only the target resource block(s). Do not touch unrelated code.
@@ -390,10 +419,12 @@ date in `YYYYMMDD.N` format (increment `.N` if multiple releases on the same day
 
 **If an ADO work item ID is in context** (mentioned in the session, linked in the
 user's initial request, visible in a previous comment, or inferred from a WI URL),
-post a summary comment to the work item after RELEASE_NOTES are updated. This
-applies to every edit to RELEASE_NOTES — including follow-on changes made later
-in the same session (e.g. design pivots, simplifications, feature removals). Do
-not wait for the user to ask; post proactively each time the release notes change.
+post a **completion** comment to the work item after RELEASE_NOTES are updated.
+(The *plan* comment was already posted in Step 2b — this is the follow-up confirming
+delivery.) This applies to every edit to RELEASE_NOTES — including follow-on
+changes made later in the same session (e.g. design pivots, simplifications,
+feature removals). Do not wait for the user to ask; post proactively each time
+the release notes change.
 
 ```bash
 SKILL_DIR="/home/bernard/.copilot/skills/azure-devops-work-item-comment"
@@ -407,6 +438,68 @@ just the initial plan comments.
 approach mid-way), call out the pivot explicitly: explain what the original
 approach was, what changed, and why — do not leave stale plan comments as the
 last record of intent.
+
+---
+
+## Step 8 — Create ESLZ documentation (mandatory when a new variable is introduced)
+
+If the change introduces a new top-level `variable` that callers will set via
+tfvars, create (or update) an annotated example file under `ESLZ/`.
+
+**Naming convention:** `ESLZ/<variable_name>.tfvars`
+
+The file must include:
+- A header comment explaining the feature and when to use it
+- At least two examples: one minimal (fewest options) and one full-featured
+- Inline comments for every non-obvious field
+- A note about which resource groups / scopes are valid
+
+```hcl
+# ESLZ/managed_identities.tfvars
+#
+# Managed Identities — create User Assigned Managed Identities with optional
+# role assignments at arbitrary scopes.
+#
+# Each key becomes part of the auto-generated name: ${prefix}-${key}-uami
+# Override with `name` for a custom name.
+
+managed_identities = {
+  # Minimal — identity only, no roles
+  devops = {}
+
+  # Full-featured — custom name, specific RG, roles at different scopes
+  app1 = {
+    name           = "custom-app1-uami"
+    resource_group = "Network"              # any key from var.resourceGroups
+    tags           = { purpose = "workload" }
+    roles = [
+      { role = "Contributor" },             # defaults to subscription scope
+      { role = "Storage Blob Data Reader", scope = "/subscriptions/.../resourceGroups/storage-rg" }
+    ]
+  }
+}
+```
+
+If `ESLZ/` does not exist, create the directory. Run `terraform fmt` on the new
+file to ensure canonical formatting.
+
+---
+
+## Step 9 — Final completeness sweep (mandatory)
+
+Before declaring work done, re-read the checklist below item by item. For each
+item, verify the artifact **actually exists on disk** (don't rely on memory):
+
+```bash
+# Quick verification sweep
+ls -la <new_files_created>           # confirm files exist
+head -5 RELEASE_NOTES.md             # confirm new entry is at top
+ls ESLZ/*.tfvars 2>/dev/null         # confirm ESLZ example exists (if applicable)
+cd tests && make test 2>&1 | tail -5 # confirm tests still pass
+```
+
+If any item is missing, fix it before reporting completion. Do not rely on the
+todo list alone — artifacts must be confirmed on disk.
 
 ---
 
@@ -424,3 +517,5 @@ Before declaring the work done, confirm every item:
 - [ ] `terraform fmt -recursive` produces no diff
 - [ ] `tflint --recursive` introduces no new warnings vs. before the change
 - [ ] RELEASE_NOTES.md updated with entry at the top
+- [ ] ESLZ tfvars example created/updated (when new variable introduced)
+- [ ] Final completeness sweep run — all artifacts confirmed on disk
