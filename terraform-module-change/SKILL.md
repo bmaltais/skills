@@ -102,6 +102,12 @@ Read the **Arguments Reference** section carefully. Note:
 - Arguments that use `triggers` or lifecycle hooks
 - Any `Changing this forces a new resource` warnings (these are breaking if used)
 
+**Compatibility guard (mandatory):** if the user asks for option coverage for a
+specific provider version (for example `4.50.0`) that differs from the pinned
+version in the repo, fetch docs for **both** versions and implement only the
+intersection required for the user's target. In your notes, explicitly state
+which options are available in the target version.
+
 ---
 
 ## Step 3 — Implement the change
@@ -135,6 +141,12 @@ Do not proceed to Step 4 until all callers are guarded.
   callers that don't pass the argument get the provider default unchanged.
 - For `triggers` blocks (re-sync on upstream change): add them alongside existing
   `depends_on` — they do not replace it.
+
+**Naming decision rule (mandatory):** when adding a brand-new interface/resource
+for a feature's first implementation, use neutral names (for example
+`managed_identities`) and avoid version suffixes like `V2`. Use versioned names
+only when there is an existing V1 implementation to preserve side-by-side
+compatibility or state migration safety.
 
 **Common pattern — adding `triggers` for re-sync:**
 ```hcl
@@ -329,8 +341,14 @@ tflint --recursive
 # 4. Check for deprecation warnings
 #    terraform validate surfaces provider deprecations that tests and fmt miss.
 #    Run it from the module root with a dummy vars file if required_vars are present.
-terraform validate 2>&1 | grep -i 'deprecat\|warning' || true
+TF_DATA_DIR="$(mktemp -d)" terraform init -backend=false -input=false -no-color >/dev/null && \
+TF_DATA_DIR="$TF_DATA_DIR" terraform validate 2>&1 | grep -i 'deprecat\|warning' || true
 ```
+
+**Workspace-cleanliness guard (mandatory):** `terraform validate` requires init,
+which can generate `.terraform/` and `.terraform.lock.hcl` noise. Always run
+init/validate with a temporary `TF_DATA_DIR` as shown above. If any artifacts
+still appear in the repo root, remove them before reporting completion.
 
 > **Guard — editing fixture files after fmt:** `terraform fmt` rewrites whitespace
 > in output and argument blocks. If you need to make further edits to any fixture
