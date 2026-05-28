@@ -58,6 +58,10 @@ Query the issue tracker and present three buckets, oldest first:
 
 Show counts and a one-line summary per issue. Let the maintainer pick.
 
+If exactly one issue appears across these three buckets, do not pause for
+selection. Proceed directly to "Triage a specific issue" for that issue and
+tell the maintainer you auto-selected it because it was the only candidate.
+
 ## Triage a specific issue
 
 1. **Gather context.** Read the full issue (body, comments, labels, reporter, dates). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs in the area. Read `.out-of-scope/*.md` and surface any prior rejection that resembles this issue.
