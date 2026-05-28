@@ -112,9 +112,21 @@ which options are available in the target version.
 
 ## Step 2b — Post plan to ADO work item (mandatory when a WI ID is in context)
 
-**Before writing any code**, post the implementation plan as a discussion comment
-on the ADO work item. This ensures the plan is reviewed and recorded *before*
-changes land in the repo.
+**Before writing any code**, set the work item state to **Active** and post the
+implementation plan as a discussion comment. This signals that work has started
+and records the plan before changes land in the repo.
+
+```bash
+source ~/dotfiles/sp/163ent-devops.user
+
+# Set state to Active
+az boards work-item update \
+  --id <WI_ID> \
+  --state "Active" \
+  --org https://dev.azure.com/Azure163ent-CloudOperations
+```
+
+Then post the plan comment:
 
 The comment must include:
 - **Goal** — one-sentence summary of what will change
