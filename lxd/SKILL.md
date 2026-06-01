@@ -1,3 +1,8 @@
+---
+name: lxd
+description: Manage LXD containers — launch, configure users, networking, storage, and snapshots.
+---
+
 # LXD Skill
 
 Manage LXD containers on Ubuntu hosts — launch, configure users, network, storage, and snapshots.
