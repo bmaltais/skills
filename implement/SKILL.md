@@ -126,12 +126,14 @@ If the brief is a bug fix and a correct seam exists — write a failing test fir
 
 If no correct seam exists, document the gap in the PR body.
 
-**Test isolation (mandatory before writing any new test):** Before writing the first test, scan 2–3 existing `*_test.go` files in the same package for environment isolation patterns, then apply the same pattern to every new test:
+**Test isolation (mandatory before writing any new test OR modifying existing tests):** Before writing the first test, scan 2–3 existing `*_test.go` files in the same package for environment isolation patterns, then apply the same pattern to every new test:
 - `t.Setenv("HOME", t.TempDir())` — isolates config/state that resolves via `os.UserHomeDir()`
 - `t.TempDir()` for writable directories — auto-cleaned after the test
 - Any `os.Setenv` / mock FS setup the existing tests use
 
 If any existing test in the package uses `t.Setenv("HOME", ...)`, all new tests in that file must use it too — even if the code path under test does not *currently* write to HOME. This prevents surprises when the implementation evolves.
+
+**When modifying existing tests** (e.g. removing a struct field they assert on): check whether the test function already has HOME isolation. If it doesn't, and the constructor it calls reads from disk (config files, state files), **add isolation now** — your change may expose a latent dependency on real disk state that was previously masked.
 
 **Red-phase gate (mandatory for bug fixes):** After writing the test, run it against the *unfixed* code before implementing the fix. The test MUST fail. If it passes before the fix, it does not exercise the broken code path — rewrite the test until it is genuinely red, or explicitly document in the PR body why no behavioral test is achievable (e.g. test requires external state that cannot be reproduced in a unit test). A test that cannot catch a regression is worse than no test — it creates false confidence.
 
@@ -151,19 +153,47 @@ Do not open a PR until all acceptance criteria are met.
 
 ### Simplify before committing (mandatory)
 
-Before running `git commit`, run the simplify skill on the uncommitted changes:
+Before running `git commit`, invoke the simplify skill on the uncommitted changes. **This means actually executing the simplify workflow** — spawning the 3 parallel review agents (code reuse, code quality, efficiency) as defined in the simplify SKILL.md. A personal glance at the diff does NOT count as running simplify.
 
 ```
 /simplify
 ```
 
+The simplify skill will:
+1. Collect the git diff
+2. Spawn 3 specialized review agents concurrently
+3. Aggregate findings and apply high-confidence fixes
+
 Apply all fixes the simplify skill proposes. Only then commit. This catches code-quality issues before they become PR review comments.
+
+**Anti-pattern:** Do not substitute your own judgment ("the code looks clean") for the actual skill invocation. The 3 agents catch issues the implementing agent is blind to (reuse opportunities against the broader codebase, efficiency patterns, quality issues).
+
+#### Fallback: environments without sub-agents (e.g. pi)
+
+If the runtime does not support spawning sub-agents, perform a **structured inline review** — three separate passes over the full `git diff`, each with a forced checklist. This is NOT the same as glancing at the diff and saying "looks clean."
+
+**Pass 1 — Code Reuse** (run `grep`/`rg` to answer each question):
+- [ ] Does any new function duplicate logic already present elsewhere in the repo? Search for key verbs/nouns from the new code.
+- [ ] Are there existing helpers (error formatting, HTTP client setup, config loading) that the new code should call instead of re-implementing?
+- [ ] If >50% of a block matches an existing function, extract or call the existing one.
+
+**Pass 2 — Code Quality:**
+- [ ] Any magic numbers or strings that should be constants?
+- [ ] Any exported symbols missing doc comments (Go) or equivalent?
+- [ ] Any error paths that swallow context (e.g. returning generic message when the original error is available)?
+- [ ] Dead code or unused imports? Run the language's lint tool (`go vet`, `eslint`, etc.).
+
+**Pass 3 — Efficiency:**
+- [ ] Any network/IO calls inside a loop?
+- [ ] Any unbounded allocations (e.g. appending in a loop without pre-sizing when length is known)?
+- [ ] Any blocking calls that could be concurrent?
+
+For each pass, **show your grep commands and their results** — this forces actual codebase inspection rather than imagination. Report findings with file:line references. Apply high-confidence fixes before committing. If all three passes produce zero findings, state that explicitly with evidence (the grep outputs).
 
 ## Phase 6 — Ship
 
 **GATE — simplify must run before any `git add`.**
-If `/simplify` was not already invoked in this session, run it now and apply all
-high-confidence fixes before proceeding. Do not skip this even for small changes.
+If `/simplify` was not already invoked in this session (i.e., the 3 parallel review agents were not actually spawned and their output collected), run it now and apply all high-confidence fixes before proceeding. A self-assessment ("looks clean") does NOT satisfy this gate. Do not skip this even for small changes. In environments without sub-agents, the structured 3-pass inline review (see "Fallback" above) satisfies this gate — but only if grep commands were actually executed and results shown.
 
 ```
 git add <specific files>
