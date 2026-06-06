@@ -110,6 +110,7 @@ git rebase --onto main <last-unwanted-commit> HEAD
 - Respect the **out of scope** list — do not touch adjacent things
 - Follow the project's existing conventions (formatting, naming, test style)
 - Run the project's type checker and linter as you go; fix errors immediately
+- **Prefer compound tools over sequential pairs** — use `read_and_patch` instead of `read` → `edit`, `create_and_run` instead of `write` → `bash`, `bash_and_run` instead of `bash` → `bash`. Check the compound tool table in system prompt before reaching for basic tools.
 - **After any full-file write or large rewrite**, run the build immediately before proceeding — catches unused imports, syntax errors, and type mismatches while context is fresh
 - **When adding side-effects to a widely-called function** (e.g. Load, Init, New), run the full test suite immediately — these functions are exercised by tests using fake environments (temp HOME, mock FS) and side-effects like auto-detection or network calls will break them
 - **Never use `sed`, `awk`, or bash string manipulation to modify source code** — always use the `edit` tool (or `write` for full rewrites). `sed` is acceptable for querying (grep, line counts) but not for code changes: it cannot validate replacements were unique, risks partial matches, and produces cascading errors (renamed functions clashing, orphaned references)
@@ -162,6 +163,16 @@ Before pushing, trace the data flow of every modified shared field:
 5. For fields that change on **every** cycle (timestamps, counters, uptime), will updating them trigger expensive side-effects (event broadcast, network push, disk persist)? If so, update locally without broadcasting — only broadcast when the *delta* crosses a meaningful threshold.
 
 This catches ordering bugs where a field is updated in the locked struct but not reflected in the working copy (or vice versa).
+
+### Documentation update (mandatory for enhancements)
+
+After the verification loop passes and before running simplify, check whether user-facing documentation needs updating:
+
+1. **README.md** — does the new feature add CLI flags, API fields, config options, or change behavior described in the README? If yes, update it.
+2. **Skill files** (e.g. `skills/*/SKILL.md`) — does the feature change what agents should know about (new commands, new JSON fields, new decision logic)? If yes, update.
+3. **CONTEXT.md** — does the feature add new domain terms or change existing definitions? If yes, update.
+
+Do NOT ship a feature PR without updating the docs that describe the feature. This includes JSON output examples, config file examples, and CLI help text shown in documentation.
 
 ### Simplify before committing (mandatory)
 

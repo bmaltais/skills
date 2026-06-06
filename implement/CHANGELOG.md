@@ -1,6 +1,22 @@
 # implement Optimization Log
 
-## Session 2026-06-05 — Step 6
+## Session 2026-06-06 — Step 7
+
+### Edits Applied
+- [op: insert_after "Write the code" conventions list] Added compound tool preference rule — reasoning: user corrected read→edit pattern (should be read_and_patch) for second time across sessions. Support count: 2 (Step 1 deferred + this session).
+- [op: insert_after verification loop, before simplify] Added "Documentation update (mandatory for enhancements)" section — reasoning: user explicitly called out README and skill file not being updated, noted it's been recurring across multiple PRs. Support count: 2 (explicit user corrections).
+
+### Deferred Edits (waiting for more signal)
+- [P3] Brief-less issue handling: agent proceeded without surfacing warning. Still correct given explicit user intent. Carried from Step 6.
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- The documentation gap was the dominant failure this session. User framed it as systematic ("how long has it been") — indicating multiple prior PRs shipped features without doc updates.
+- Compound tool issue now promoted from P2→applied after second occurrence. Clear and unambiguous.
+- Convergence: slight regression (user had to correct twice), but root causes are now addressed with clear mandatory steps. Skill should be back to low-friction next session.
+- Strategy: both edits add mandatory steps. Skill is getting longer — next session should watch for whether the added steps cause slowdown or get skipped.
 
 ### Edits Applied
 - (none — no P0/P1 issues observed)
