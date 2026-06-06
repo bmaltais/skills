@@ -1,5 +1,73 @@
 # implement Optimization Log
 
+## Session 2026-06-05 — Step 6
+
+### Edits Applied
+- (none — no P0/P1 issues observed)
+
+### Deferred Edits (waiting for more signal)
+- [P3] Brief-less issue warning: agent proceeded without surfacing "no agent brief found" to user. Correct call given user's explicit intent, but skill says to always flag. Watch for case where missing brief causes wrong implementation.
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- Session implemented 3 issues (#45, #46, #47) in one PR. Clean execution: bug fix correct first try, install.sh and README updates straightforward.
+- Shell environment issue (`sudo` alias intercepting `cd`) caused repeated tool failures — not skill-addressable, agent adapted.
+- 5 review comments on PR addressed cleanly in one pass, merged successfully.
+- Convergence: stable. Four consecutive low-friction sessions. Skill is mature. Learning rate should remain low.
+
+## Session 2026-06-05 — Step 5
+
+### Edits Applied
+- [op: append to concurrency review checklist] Added item 5: "For fields that change on every cycle, will updating them trigger expensive side-effects?" — reasoning: UptimeSeconds always changes on every poll, was marked as metricsChanged, causing EventHealthChange broadcast every 15s. Support count: 1, but clear and generalizable pattern.
+
+### Deferred Edits (waiting for more signal)
+- [P3] Multi-issue PRs: still no friction observed across 3 sessions. Dropping — clearly not a problem.
+
+### Observed Regressions from Previous Edits
+- (none) — The concurrency review checklist (Step 4) was relevant to this session's failure #2 (incomplete merge-back), but the agent didn't fully execute the checklist. This is an execution gap, not a skill gap.
+
+### Meta Notes
+- Session combined 3 issues into one PR. Clean except for 2 review comments, both in gossip polling code.
+- The concurrency review checklist from Step 4 partially helped (merge-back issue is covered by item 3) but agent didn't trace all new fields through it. Reinforcing with more text unlikely to help — this is attention/discipline.
+- Convergence: stable. 2 substantive review comments is low. The new item 5 addresses a distinct category (frequency-triggered side-effects) not previously covered.
+
+## Session 2026-06-05 — Step 4
+
+### Edits Applied
+- [op: insert_after "Verification loop"] Added "Shared-state / concurrency review" checklist — reasoning: 2 review comments (self-disk race, missing event broadcast) traced to same root cause: stale copy overwrites and incomplete side-effect triggering. Support count: 2.
+- [op: append to Pass 2 checklist] Added fallback/recovery error-swallowing check — reasoning: `loadFromMeshConfig` silently discarded parse errors and fell through to legacy config, re-introducing the bug it was supposed to fix. Support count: 1.
+- [op: insert_after "Tests" first paragraph] Added "Code-path coverage rule" — reasoning: DiskFreeGB health parsing had no direct test; only end-to-end display test. Reviewer caught it. Promotes deferred P3 from Step 2. Support count: 2 (this session + deferred signal).
+
+### Deferred Edits (waiting for more signal)
+- [P3] Multi-issue PRs: still no friction observed. Keep watching.
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- Session had 4 review comments — all valid logic/coverage issues. The 3-pass simplify caught formatting/reuse but not concurrency semantics. Concurrency review is a distinct concern that the simplify pass doesn't cover well.
+- Convergence: slight regression this session (4 review comments vs 0 in previous 3 sessions). Root cause: new territory (concurrent gossip state) exposed gaps in verification. Edits applied should prevent recurrence.
+- Deferred "Go test stdout capture pattern" dropped — no signal in 3 sessions, clearly one-off.
+
+## Session 2026-06-05 — Step 3
+
+### Edits Applied
+- (none — no P0/P1 issues observed)
+
+### Deferred Edits (waiting for more signal)
+- [P3] Multi-issue PRs: skill assumes single issue per invocation. Two-bug PR worked fine here but isn't explicitly documented. Wait for signal where combining causes problems.
+- [P3] Go test stdout capture pattern: use `os.Pipe()` + `io.ReadAll(r)`, not `strings.Builder.ReadFrom`. Carried from Step 2.
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- Session combined two issues (#35, #36) into a single branch/PR. Efficient, no friction.
+- Missing import caught immediately by existing "build after write" guard — guard is working.
+- Convergence: stable. Three consecutive low-friction sessions. Skill is mature.
+
 ## Session 2026-06-05 — Step 2
 
 ### Edits Applied

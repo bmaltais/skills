@@ -124,6 +124,8 @@ git rebase --onto main <last-unwanted-commit> HEAD
 
 If the brief is a bug fix and a correct seam exists — write a failing test first, then fix it (red-green). If it is an enhancement, write tests that verify the new behavior described in the acceptance criteria.
 
+**Code-path coverage rule:** Every new branching code path (new `if`, new function, new parse/decode step) needs at least one test that exercises it directly — not just an end-to-end test that happens to pass through it. If you add a function that parses a health response, test the parsing. If you add a fallback path, test both the happy path and the fallback. End-to-end tests verify behavior; unit tests pin each new code path against regressions.
+
 If no correct seam exists, document the gap in the PR body.
 
 **Test isolation (mandatory before writing any new test OR modifying existing tests):** Before writing the first test, scan 2–3 existing `*_test.go` files in the same package for environment isolation patterns, then apply the same pattern to every new test:
@@ -150,6 +152,16 @@ After implementing, work through the acceptance criteria checklist one by one. F
 - Run `<binary> <command> --help` for each affected command and confirm the flag appears.
 
 Do not open a PR until all acceptance criteria are met.
+
+**Shared-state / concurrency review (mandatory when touching structs accessed under a mutex or across goroutines):**
+Before pushing, trace the data flow of every modified shared field:
+1. Where is it written? (identify all write sites — including copies made before/after locks)
+2. Where is it read? (is the read seeing the latest write, or a stale copy?)
+3. If a snapshot copy is made, are updates applied *before* the copy or *after*? (after = stale copy overwrites the update on merge-back)
+4. Are side-effects (persistence, event broadcast) triggered for *all* change paths, or only some?
+5. For fields that change on **every** cycle (timestamps, counters, uptime), will updating them trigger expensive side-effects (event broadcast, network push, disk persist)? If so, update locally without broadcasting — only broadcast when the *delta* crosses a meaningful threshold.
+
+This catches ordering bugs where a field is updated in the locked struct but not reflected in the working copy (or vice versa).
 
 ### Simplify before committing (mandatory)
 
@@ -181,6 +193,7 @@ If the runtime does not support spawning sub-agents, perform a **structured inli
 - [ ] Any magic numbers or strings that should be constants?
 - [ ] Any exported symbols missing doc comments (Go) or equivalent?
 - [ ] Any error paths that swallow context (e.g. returning generic message when the original error is available)?
+- [ ] Any fallback/recovery paths that silently discard errors? (e.g. `if err != nil { /* fall through to next option */ }` when the error indicates corruption, not absence)
 - [ ] Dead code or unused imports? Run the language's lint tool (`go vet`, `eslint`, etc.).
 
 **Pass 3 — Efficiency:**
