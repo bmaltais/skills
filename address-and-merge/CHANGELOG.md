@@ -1,5 +1,50 @@
 # address-and-merge Optimization Log
 
+## Session 2026-06-05 — Step 4
+
+### Edits Applied
+- (none — skill worked cleanly)
+
+### Deferred Edits (waiting for more signal)
+- [P3] Build after each individual comment fix — carried from Step 1. Dropping: 4 sessions without issue, pattern is "apply all, then build" which catches everything.
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- Fourth session. 5 inline review comments addressed cleanly in one commit. Merged first try.
+- Convergence: stable. Skill is mature. No edits needed across 4 consecutive sessions. Dropping all deferred items — no confirming signal after extended observation.
+
+## Session 2026-06-05 — Step 3
+
+### Edits Applied
+- (none — skill worked cleanly)
+
+### Deferred Edits (waiting for more signal)
+- [P3] Build after each individual comment fix — carried from Step 1. Still not needed (2 fixes applied, build passed after both).
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- Third session. 2 inline review comments addressed cleanly. Merged on first try.
+- Convergence: stable. Skill is mature. Dropping learning rate — no edits needed for 3 consecutive sessions.
+
+## Session 2026-06-05 — Step 2
+
+### Edits Applied
+- (none — skill worked cleanly)
+
+### Deferred Edits (waiting for more signal)
+- [P3] Consider adding a note about running build after each individual comment fix (not just all at once). Carried from Step 1.
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- Second session. Worked cleanly: 3 inline comments addressed, build passed, merged, cleaned up.
+- Convergence: stable. Skill is working as designed.
+
 ## Session 2026-06-05 — Step 1
 
 ### Edits Applied
