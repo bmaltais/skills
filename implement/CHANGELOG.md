@@ -1,5 +1,21 @@
 # implement Optimization Log
 
+## Session 2026-06-07 — Step 8
+
+### Edits Applied
+- [op: insert_after "Patch boundaries" bullet] Added "Verify stdlib APIs before writing" rule — reasoning: second occurrence of stdlib field hallucination (Step 2: general stdlib error; this session: `http.Server.WriteBufferSize` doesn't exist, confused with `http.Transport`). Rule requires `go doc` check before using any field not read from codebase files. Support count: 2.
+
+### Deferred Edits (waiting for more signal)
+- [P3] Brief-less issue handling: promoted to implement-time note but still no friction observed. Issue #147 had no brief but user provided extensive context inline. Watch for case where missing brief causes wrong implementation.
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- Skill executed cleanly otherwise: correct branch, pre-push diff check, Content-Length test, simplify pass all completed without friction.
+- The stdlib API hallucination is a recurring pattern (2nd occurrence) — worth encoding. The build guard always catches it but a pre-write `go doc` check costs seconds, not a full write+revert cycle.
+- Convergence: stable. Single failure mode addressed. Learning rate stays low.
+
 ## Session 2026-06-06 — Step 7
 
 ### Edits Applied
