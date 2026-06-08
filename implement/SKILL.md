@@ -221,7 +221,10 @@ For each pass, **show your grep commands and their results** — this forces act
 **GATE — simplify must run before any `git add`.**
 If `/simplify` was not already invoked in this session (i.e., the 3 parallel review agents were not actually spawned and their output collected), run it now and apply all high-confidence fixes before proceeding. A self-assessment ("looks clean") does NOT satisfy this gate. Do not skip this even for small changes. In environments without sub-agents, the structured 3-pass inline review (see "Fallback" above) satisfies this gate — but only if grep commands were actually executed and results shown.
 
+**Pre-staging path check (mandatory):** Run `git status` and use the exact file paths it shows — do not derive paths from source locations or memory. In projects where the git root differs from the module root (e.g., Go module in a `go/` subdirectory), CWD-relative paths in `git status` will differ from the paths you'd guess from reading the code.
+
 ```
+git status               # read exact paths, then use those below
 git add <specific files>
 git commit -m "<type>: <summary from brief>"
 git push -u origin <branch>
