@@ -1,5 +1,21 @@
 # implement Optimization Log
 
+## Session 2026-06-07 — Step 8
+
+### Edits Applied
+- [op: insert_before "git add"] Added mandatory "pre-staging path check" — run `git status` first and use exact paths shown. Reasoning: `git add go/cmd/model-shelf/main.go` failed because CWD was inside `go/` subdirectory; git resolved as `go/go/...`. Required retry. Support count: 1, but fully generalizable to any project where git root ≠ module root.
+
+### Deferred Edits (waiting for more signal)
+- [P3] Brief-less issues: 3rd consecutive session with no agent brief comments. Skill handling (flag + proceed with body) continues to produce correct implementations. No skill gap. Keeping at P3 indefinitely — the handling works.
+
+### Observed Regressions from Previous Edits
+- (none) — Step 7's documentation update and compound-tool rules were not exercised this session (no enhancements, no read→edit patterns). No regression.
+
+### Meta Notes
+- Multi-issue PR deferred concern (from Step 3): 4+ sessions, zero problems. Dropping permanently.
+- Session was low-friction except for one git add retry. The new mandatory `git status` check is the only edit worth making.
+- Convergence: stable. One mechanical failure (path prefix), one correct fix. Skill is mature. Learning rate staying low.
+
 ## Session 2026-06-06 — Step 7
 
 ### Edits Applied
