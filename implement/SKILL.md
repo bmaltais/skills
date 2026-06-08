@@ -243,6 +243,13 @@ EOF
 )"
 ```
 
+**PR group check (mandatory when issue has a `pr-group` label or references sub-issues):**
+If the implemented issue bundles multiple sub-issues (e.g. `#245` covering `#237` and `#242`), add a `Closes #N` line for **each** sub-issue in the PR body. GitHub only auto-closes issues that appear explicitly with `Closes`/`Fixes`/`Resolves` — the umbrella issue body is not scanned. Scan the issue body for `#NNN` patterns to identify sub-issues:
+
+```bash
+gh issue view N --json body --jq '.body' | grep -oE '#[0-9]+'
+```
+
 Return the PR URL to the maintainer.
 
 ## Phase 7 — Handoff
@@ -284,7 +291,7 @@ Work through each inline comment:
 - NEVER commit directly to main or master
 - NEVER open a PR before all acceptance criteria are verified
 - NEVER touch anything listed under **Out of scope**
-- ALWAYS include `Closes #N` in the PR body
+- ALWAYS include `Closes #N` for every issue closed by the PR — umbrella issue AND all sub-issues (GitHub only auto-closes issues explicitly listed)
 - ALWAYS remove `ready-for-agent` from the issue when the PR is open
 - ALWAYS run type checker and linter before pushing — fix errors, never suppress
 - ALWAYS surface ambiguities in Phase 4, not mid-implementation

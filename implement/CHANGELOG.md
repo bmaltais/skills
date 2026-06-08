@@ -1,21 +1,5 @@
 # implement Optimization Log
 
-## Session 2026-06-08 — Step 9
-
-### Edits Applied
-- [op: insert_after Phase 6 PR creation block] Added "PR group check" — mandatory step to add `Closes #N` for each sub-issue when implementing a PR group issue. Reasoning: PR #250 for issue #245 (covering #237 and #242) only had `Closes #245`; sub-issues required manual close by user. Support count: 1, but fully generalizable and zero ambiguity.
-- [op: replace Key Invariants] Updated `Closes #N` invariant to explicitly name the umbrella + sub-issue requirement.
-
-### Deferred Edits (waiting for more signal)
-- (none)
-
-### Observed Regressions from Previous Edits
-- (none) — Step 8's `git status` pre-staging check: not exercised this session (CWD was correct), no regression.
-
-### Meta Notes
-- One clean failure, one surgical fix. PR group handling was a genuine gap — not covered by any existing rule.
-- Convergence: stable with one gap patched. Learning rate stays low.
-
 ## Session 2026-06-07 — Step 8
 
 ### Edits Applied
