@@ -217,7 +217,10 @@ def post_top_level_comment(owner: str, repo: str, number: str, body: str, dry_ru
         print(body[:500] + "..." if len(body) > 500 else body)
         return "dry-run"
 
-    return run_gh(["pr", "comment", f"{owner}/{repo}#{number}", "--body", body])
+    # Use --repo + separate number (robust form). Matches github.sh:post_pr_comment,
+    # get_pr_info, SKILL.md claims, and works outside git checkouts / any cwd.
+    # Avoids gh mis-parsing "owner/repo#N" as a branch name.
+    return run_gh(["pr", "comment", "--repo", f"{owner}/{repo}", number, "--body", body])
 
 
 def post_review_with_comments(

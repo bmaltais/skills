@@ -21,17 +21,29 @@ This directory contains the official helpers for the `/pr-reviewer` skill.
 
 ## Usage inside the skill
 
-The SKILL.md instructs the agent to prefer:
+The SKILL.md instructs the agent that plain `/pr-reviewer <pr>` (or equivalent) means **review + post by default**.
+
+The agent should:
+
+1. Output the exact structured review (starting with **Summary**).
+2. Write the review to a temp file.
+3. Run the helper with `--dry-run` (the result is shown for transparency).
+4. Because the command itself signals posting intent, immediately re-run the same command with `--confirm` (unless the user used `--no-post` or objects after the dry-run preview).
+
+Example (default top-level comment):
 
 ```bash
 python3 /home/bernard/.grok/skills/pr-reviewer/scripts/post_review.py \
-  --pr-url "..." \
-  --review-file /tmp/review.md \
-  --mode hybrid \
+  --pr-url "https://github.com/OWNER/REPO/pull/123" \
+  --review-file /tmp/copilot-review.md \
+  --mode comment \
   --dry-run
+
+# then
+python3 ... --confirm
 ```
 
-After user says "yes, post it", re-run with `--confirm`.
+Use `--mode hybrid` (or `--inline`) only when the user explicitly requests line-anchored comments. Use `--no-post` / `--review-only` to produce the review text without writing to the PR.
 
 ## Design philosophy
 
