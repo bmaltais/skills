@@ -30,7 +30,7 @@ For common multi-step operations, reach for scripts in `scripts/` first:
 
 # Examples:
 ./scripts/setup-user.sh pi bernard
-./scripts/setup-user.sh webapp deploy /home/bernard/.ssh/id_ed25519.pub
+./scripts/setup-user.sh webapp deploy ~/.ssh/id_ed25519.pub
 ```
 
 Scripts keep variables in scope, handle cleanup, and reduce the chance of typos or forgotten steps.

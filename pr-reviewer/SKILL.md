@@ -149,7 +149,9 @@ After you have produced the review in the exact required format, you can post it
 2. Call the Python helper with `--dry-run` first (now more resilient):
 
 ```bash
-python3 /home/bernard/.grok/skills/pr-reviewer/scripts/post_review.py \
+# Auto-locate the skill scripts (works for any agent install path)
+SKILL_DIR=$(find ~/.copilot/skills ~/.claude/skills ~/.hermes/skills ~/.grok/skills -maxdepth 1 -name "pr-reviewer" -type d 2>/dev/null | head -1)
+python3 "${SKILL_DIR}/scripts/post_review.py" \
   --pr-url "https://github.com/OWNER/REPO/pull/123" \
   --review-file /tmp/copilot-review.md \
   --mode comment \
@@ -183,7 +185,8 @@ EOF
 ### Quick Manual Token / Parsing (when needed)
 
 ```bash
-source /home/bernard/.grok/skills/pr-reviewer/scripts/github.sh
+SKILL_DIR=$(find ~/.copilot/skills ~/.claude/skills ~/.hermes/skills ~/.grok/skills -maxdepth 1 -name "pr-reviewer" -type d 2>/dev/null | head -1)
+source "${SKILL_DIR}/scripts/github.sh"
 TOKEN=$(get_github_token)
 read owner repo num <<< "$(parse_pr_url "$PR_URL")"
 HEAD_SHA=$(get_pr_head_sha "$owner" "$repo" "$num")   # only needed for --mode inline/hybrid

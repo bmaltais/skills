@@ -10,12 +10,12 @@ End-to-end skill for running Coder (self-hosted dev environments) on a k3s clust
 
 ## Cluster Context
 
-- **Coder server**: `mini1` (NodePort 31557), namespace `coder`
-- **Access URL**: `http://100.101.186.51:31557` (Tailscale direct) or SSH tunnel → `http://localhost:8081`
-- **SSH tunnel**: `ssh -L 8081:100.101.186.51:31557 bernard@mini1 -N`
-- **PostgreSQL**: `coder-db` pod in `coder` namespace on `mini1`
-- **Helm values**: `/home/bernard/coder/helm-values.yaml`
-- **Templates dir**: `/home/bernard/coder/workspace-template/` (ai-workspace), `/home/bernard/coder/workspace-template-minimal/` (minimal-ubuntu)
+- **Coder server**: `<CODER_SERVER_HOST>` (NodePort 31557), namespace `coder`
+- **Access URL**: `http://<CODER_SERVER_IP>:31557` (Tailscale direct) or SSH tunnel → `http://localhost:8081`
+- **SSH tunnel**: `ssh -L 8081:<CODER_SERVER_IP>:31557 <USER>@<CODER_SERVER_HOST> -N`
+- **PostgreSQL**: `coder-db` pod in `coder` namespace on `<CODER_SERVER_HOST>`
+- **Helm values**: `~/coder/helm-values.yaml`
+- **Templates dir**: `~/coder/workspace-template/` (ai-workspace), `~/coder/workspace-template-minimal/` (minimal-ubuntu)
 
 ## When to Use
 
@@ -35,7 +35,7 @@ See [./references/install.md](./references/install.md) for full procedure.
 
 Quick upgrade:
 ```bash
-helm upgrade coder coder-v2/coder -n coder -f /home/bernard/coder/helm-values.yaml
+helm upgrade coder coder-v2/coder -n coder -f ~/coder/helm-values.yaml
 ```
 
 ---
@@ -47,12 +47,12 @@ Coder CLI requires a session token — browser auth doesn't work over SSH.
 ```bash
 # 1. Open UI → Settings → Tokens → + New token
 # 2. Run:
-ssh bernard@mini1 "coder login http://100.101.186.51:31557 --token <token>"
+ssh <USER>@<CODER_SERVER_HOST> "coder login http://<CODER_SERVER_IP>:31557 --token <token>"
 ```
 
 Verify:
 ```bash
-ssh bernard@mini1 "coder list"
+ssh <USER>@<CODER_SERVER_HOST> "coder list"
 ```
 
 ---
@@ -63,18 +63,18 @@ See [./references/templates.md](./references/templates.md) for authoring guide.
 
 ### Push an update
 ```bash
-scp -r /home/bernard/coder/workspace-template bernard@mini1:/tmp/
-ssh bernard@mini1 "coder templates push ai-workspace --directory /tmp/workspace-template/ --yes"
+scp -r ~/coder/workspace-template <USER>@<CODER_SERVER_HOST>:/tmp/
+ssh <USER>@<CODER_SERVER_HOST> "coder templates push ai-workspace --directory /tmp/workspace-template/ --yes"
 ```
 
 ### Update existing workspace to new template version
 ```bash
-ssh bernard@mini1 "coder update <owner>/<workspace>"
+ssh <USER>@<CODER_SERVER_HOST> "coder update <owner>/<workspace>"
 ```
 
 ### List templates
 ```bash
-ssh bernard@mini1 "coder templates list"
+ssh <USER>@<CODER_SERVER_HOST> "coder templates list"
 ```
 
 ---
@@ -122,13 +122,13 @@ Replace `codercom/enterprise-base:ubuntu` with a custom image that has your tool
 
 ```bash
 # List all workspaces
-ssh bernard@mini1 "coder list"
+ssh <USER>@<CODER_SERVER_HOST> "coder list"
 
 # Create workspace from template
-ssh bernard@mini1 "coder create --template=ai-workspace --org=coder myworkspace"
+ssh <USER>@<CODER_SERVER_HOST> "coder create --template=ai-workspace --org=coder myworkspace"
 
 # Delete workspace
-ssh bernard@mini1 "coder delete <owner>/<workspace> --yes"
+ssh <USER>@<CODER_SERVER_HOST> "coder delete <owner>/<workspace> --yes"
 
 # Get workspace pod
 kubectl get pods -A | grep coder- | grep -v '^coder '
@@ -147,18 +147,18 @@ kubectl exec -n coder-<owner> workspace-<name> -- bash
 After pushing a template fix with `coder templates push`, always use `coder update` (not `coder restart`) to pick up the change:
 ```bash
 # Push fix
-scp -r /home/bernard/coder/workspace-template-minimal bernard@mini1:/tmp/
-ssh bernard@mini1 "coder templates push minimal-ubuntu --directory /tmp/workspace-template-minimal/ --yes"
+scp -r ~/coder/workspace-template-minimal <USER>@<CODER_SERVER_HOST>:/tmp/
+ssh <USER>@<CODER_SERVER_HOST> "coder templates push minimal-ubuntu --directory /tmp/workspace-template-minimal/ --yes"
 
 # Apply to a running workspace (no --yes flag available)
-ssh bernard@mini1 "coder update <owner>/<workspace>"
+ssh <USER>@<CODER_SERVER_HOST> "coder update <owner>/<workspace>"
 ```
 
 Monitor until healthy:
 ```bash
-ssh bernard@mini1 "coder logs <owner>/<workspace> --follow"
+ssh <USER>@<CODER_SERVER_HOST> "coder logs <owner>/<workspace> --follow"
 # Confirm: HEALTHY: true
-ssh bernard@mini1 "coder list"
+ssh <USER>@<CODER_SERVER_HOST> "coder list"
 ```
 
 ---
