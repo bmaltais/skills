@@ -1,5 +1,22 @@
 # implement Optimization Log
 
+## Session 2026-06-15 — Step 9
+
+### Edits Applied
+- (none — zero friction)
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- (none) — mandatory documentation update step (from Step 7) was exercised and worked: README.md and skillpack/SKILL.md were updated as part of issue #104 without user prompting.
+- The `git status` pre-staging check (from Step 8) was used and correct.
+
+### Meta Notes
+- Two issues implemented (#104 large refactor, #98 trivial data-only change). Both PRs merged with zero review comments.
+- Simplify 3-pass inline review caught the applyMerge duplication independently — no user correction needed.
+- Convergence: strong. Skill is performing well. Learning rate staying low.
+
 ## Session 2026-06-07 — Step 8
 
 ### Edits Applied
