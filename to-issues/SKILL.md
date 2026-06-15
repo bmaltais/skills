@@ -47,6 +47,8 @@ Ask the user:
 - Should any slices be merged or split further?
 - Are the correct slices marked as HITL and AFK?
 
+**Skip the quiz** if the maintainer responds with a blanket approval ("do what is best", "looks good", "just go ahead") — apply your own judgment, document your decisions inline, and proceed directly to Step 5.
+
 Iterate until the user approves the breakdown.
 
 ### 5. Publish the issues to the issue tracker
