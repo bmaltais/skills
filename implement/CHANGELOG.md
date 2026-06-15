@@ -147,3 +147,19 @@
 ### Meta Notes
 - Added simplify fallback for no-subagent environments earlier in session (separate invocation)
 - Skill is fairly mature — prefer surgical edits over broad additions
+
+## Session 2026-06-15 — Step 10
+
+### Edits Applied
+- [op: insert_after compound-tools rule] Added `patch-verify` specific rule — reasoning: agent used `replace_string_in_file` for all literal replacements throughout the session despite `patch-verify` being installed and GA. User explicitly flagged. Support count: pervasive (every file edit in session).
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- (none) — pre-staging `git status` check (Step 8) used correctly; documentation update step (Step 7) applied correctly (README updated in same PR).
+
+### Meta Notes
+- Session was otherwise clean: all 9 AC verified first-try, no PR review comments.
+- The `patch-verify` miss is the only gap. Root cause: skill names generic compound tool preference but not repo-specific registered tools.
+- Convergence: stable, one new rule added. Skill is mature.
