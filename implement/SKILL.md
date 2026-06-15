@@ -141,8 +141,6 @@ If any existing test in the package uses `t.Setenv("HOME", ...)`, all new tests 
 
 **When modifying existing tests** (e.g. removing a struct field they assert on): check whether the test function already has HOME isolation. If it doesn't, and the constructor it calls reads from disk (config files, state files), **add isolation now** — your change may expose a latent dependency on real disk state that was previously masked.
 
-**Go `flag` package test convention:** When writing tests for binaries that use `flag.NewFlagSet`, always place flag arguments *before* positional arguments in test `args` slices — e.g. `[]string{"--labels", "bug", "--comment", "hi", "owner/repo", "42"}` not `[]string{"owner/repo", "42", "--labels", ...}`. The `flag` package stops parsing at the first non-flag argument, so flags after positionals are silently treated as extra positionals and cause wrong-argument-count errors that look like unrelated failures.
-
 **Red-phase gate (mandatory for bug fixes):** After writing the test, run it against the *unfixed* code before implementing the fix. The test MUST fail. If it passes before the fix, it does not exercise the broken code path — rewrite the test until it is genuinely red, or explicitly document in the PR body why no behavioral test is achievable (e.g. test requires external state that cannot be reproduced in a unit test). A test that cannot catch a regression is worse than no test — it creates false confidence.
 
 ### Verification loop
@@ -173,7 +171,7 @@ This catches ordering bugs where a field is updated in the locked struct but not
 
 After the verification loop passes and before running simplify, check whether user-facing documentation needs updating:
 
-1. **README.md** — does the new feature add CLI flags, API fields, config options, or change behavior described in the README? If yes, update it. **Re-read the file immediately before editing** if it was already modified earlier in this same session — the in-memory view may be stale and cause duplicate inserts on batch replacements.
+1. **README.md** — does the new feature add CLI flags, API fields, config options, or change behavior described in the README? If yes, update it.
 2. **Skill files** (e.g. `skills/*/SKILL.md`) — does the feature change what agents should know about (new commands, new JSON fields, new decision logic)? If yes, update.
 3. **CONTEXT.md** — does the feature add new domain terms or change existing definitions? If yes, update.
 

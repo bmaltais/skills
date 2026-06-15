@@ -163,3 +163,20 @@
 - Session was otherwise clean: all 9 AC verified first-try, no PR review comments.
 - The `patch-verify` miss is the only gap. Root cause: skill names generic compound tool preference but not repo-specific registered tools.
 - Convergence: stable, one new rule added. Skill is mature.
+
+## Session 2026-06-15 — Step 10
+
+### Edits Applied
+- [op: insert_before red-phase gate] Added Go flag test convention: flags before positionals in `flag`-based CLI tests. Reasoning: 8 test cases had to be mass-fixed because flags were placed after positionals — `flag` package silently stopped parsing. Support: 8 fixes in one shot.
+- [op: replace] README.md doc update note — added "re-read file immediately before editing if modified earlier in session". Reasoning: README had duplicate row from a prior write in same session; multi_replace matched it twice. Support: 1.
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- (none) — previous edits (compound-tool rule, documentation update step, `git status` pre-staging check) all fired correctly this session with zero user corrections.
+
+### Meta Notes
+- Two PRs shipped (#20, #21), both merged with zero review comments.
+- Step 9 regression confirmed: documentation update step worked as intended — README and overlays updated without prompting.
+- Convergence: strong. Skill is performing well. The flag-ordering note is the only new mechanical gap identified across many sessions.
