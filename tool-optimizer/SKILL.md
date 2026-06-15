@@ -11,9 +11,26 @@ Whenever this skill is invoked (or you notice repetitive patterns), perform a **
 
 ### Step-by-Step Analysis Process
 
+0. **Check repo-local tooling first (mandatory)**
+   Before proposing any new tool, inspect the current repo:
+   - Read `Makefile` for existing compound targets (e.g. `make check`)
+   - Read `tools/registry.json` (if present) for registered tools and their status (`st` field)
+   - Read `docs/V1-PLAN.md` and `docs/IMPLEMENTATION-CHECKLIST.md` (if present) for planned work
+   - Only surface gaps that are **not already covered** by an existing tool or planned milestone
+   - For any proposed tool that duplicates existing functionality, note the existing solution instead
+
 1. **Scan the entire current session**
    - List every tool/command that was called (shell, read, edit, search, etc.)
    - Group sequences that happen together repeatedly.
+
+1b. **Missed-Use Audit (mandatory)**
+   For each registered/installed tool in the repo, scan the session for calls that *should* have routed to that tool but didn't:
+   - e.g. `replace_string_in_file` used for a literal replacement when `patch-verify` was available
+   - e.g. `go build && go test && go vet` called separately when `make check` exists
+   For each missed use, propose a **corrective action** — not just "use the tool next time" but one of:
+   - Update the Copilot overlay `pick_when` hints in `tools/overlays/copilot.json`
+   - Add a rule to `.github/copilot-instructions.md`
+   - File an issue to improve tool discoverability
 
 2. **Identify Common Patterns** (look for these red flags)
    - Tools called in fixed sequences (e.g. `read → edit → shell(lint)`)
@@ -56,3 +73,12 @@ Invoke this skill by saying:
 - `/tool-optimizer`
 
 After the review, ask: *"Would you like me to scaffold any of these tools?"*
+
+
+### Permanent Instructions
+- Always prefer suggesting **native fast CLI tools** over MCP or complex agents when the goal is speed.
+- Keep tools extremely focused and lightweight.
+- After suggesting, ask if I want the full ready-to-compile code.
+- Update this skill with new patterns you discover over time.
+
+You are proactive: even without being explicitly asked, mention tool optimization opportunities when you see clear repetitive chains.
