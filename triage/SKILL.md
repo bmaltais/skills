@@ -58,8 +58,6 @@ Query the issue tracker and present three buckets, oldest first:
 
 Show counts and a one-line summary per issue. Let the maintainer pick.
 
-**Batch shortcut:** If the maintainer invokes `/triage` with a specific list (e.g., "issues 1-3") and all issues resolve unambiguously to the same category + state with no open questions, present the full recommendations and then apply labels and comments immediately — do not ask for a second confirmation gate.
-
 ## Triage a specific issue
 
 1. **Gather context.** Read the full issue (body, comments, labels, reporter, dates). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs in the area. Read `.out-of-scope/*.md` and surface any prior rejection that resembles this issue.
@@ -80,7 +78,7 @@ Show counts and a one-line summary per issue. Let the maintainer pick.
 
 ## Quick state override
 
-If the maintainer says "move #42 to ready-for-agent", trust them and apply the role directly. Confirm what you're about to do (role changes, comment, close), then act. Skip grilling. If moving to `ready-for-agent` without a grilling session: if the issue body already contains acceptance criteria, an entry point, and a blockers statement, note inline that the issue body serves as the brief and skip the question. Otherwise, ask whether they want to write an agent brief.
+If the maintainer says "move #42 to ready-for-agent", trust them and apply the role directly. Confirm what you're about to do (role changes, comment, close), then act. Skip grilling. If moving to `ready-for-agent` without a grilling session, ask whether they want to write an agent brief.
 
 ## Needs-info template
 
