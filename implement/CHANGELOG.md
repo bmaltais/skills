@@ -1,5 +1,20 @@
 # implement Optimization Log
 
+## Session 2026-06-26 — Step 11
+
+### Edits Applied
+- [op: insert_after "Verify stdlib APIs before writing" bullet] Added "Verify internal/project symbols before referencing them" guard — grep for a project-internal helper/constructor/test-harness before calling it; do not invent plausible-sounding helpers or CLI-command test harnesses from memory; when no test harness exists, extract pure logic into a standalone function and unit-test that. Reasoning: issue #119 produced 2× invented-symbol failures in one session — `resolveDefaultAgent` (didn't exist; switched to `resolveAgents`) and a `buildRelinkCmd`/`relinkCmdType` test harness (didn't exist; rewrote the whole test file to test `validateRelinkFlags` directly). Support count: 2, systematic this session, fully generalizable.
+
+### Deferred Edits (waiting for more signal)
+- (none new) — prior P3 (formatter drift / PR churn for simplify) not re-observed this session; still parked.
+
+### Observed Regressions from Previous Edits
+- (none) — Step 10's heredoc-quoting rule worked: PR #122 body rendered code spans correctly. Pre-push diff check caught that `origin/main` had diverged; branched-from-main discipline and `gh auth status` both used correctly.
+
+### Meta Notes
+- The 2× invented-symbol pattern is the *same root cause* as Step 10's stdlib-API guard, just extended to internal symbols. The existing guard only covered stdlib — this session showed the gap applies equally to project helpers and test harnesses.
+- Convergence: stable/mature (11 sessions). Failures remain rare and mechanical. The new edit closes a sibling gap to an existing guard rather than opening a new failure category. Learning rate low — one targeted edit.
+
 ## Session 2026-06-26 — Step 10
 
 ### Edits Applied
