@@ -1,5 +1,21 @@
 # implement Optimization Log
 
+## Session 2026-06-26 — Step 10
+
+### Edits Applied
+- [op: insert_after Phase 6 PR-create code block] Added "Heredoc quoting (mandatory)" rule — inside `<<'EOF'` do not backslash-escape backticks or `$`; single quotes already suppress expansion, so escaping injects literal `\` into the PR body. Reasoning: PR #118's body rendered every code span as `\`text\`` on GitHub (confirmed via `gh pr view`). Support count: 1, but reproducible and degrades every PR.
+
+### Deferred Edits (waiting for more signal)
+- [P3] (simplify skill) "When a formatter flags a file, verify the drift is within your changed lines before reformatting — don't fix pre-existing unrelated drift (PR churn)." Observed once this session (`gofmt -l` flagged pre-existing const-block comment drift); diagnosed correctly with `gofmt -d` and left alone. Handling worked — park until a second occurrence.
+
+### Observed Regressions from Previous Edits
+- (none) — the "build after write" guard caught the missing `strings` import proactively (same as Step 3's note). Documentation-update step not exercised (pure bug fix). Pre-push diff check and `git status` staging discipline both used correctly.
+
+### Meta Notes
+- Single issue (#115, fork stale-address bug fix) implemented cleanly; simplify 3-agent review then caught a genuine missing-guard robustness gap in my own new code, fixed before merge.
+- The one new failure mode (heredoc backtick escaping) is a *new* category not previously seen across 9 prior sessions — surfaced because this PR body was unusually code-span-heavy.
+- Convergence: stable/mature. 10 sessions; failures are now rare and mechanical. Learning rate staying low — one targeted edit this round.
+
 ## Session 2026-06-15 — Step 9
 
 ### Edits Applied

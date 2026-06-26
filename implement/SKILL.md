@@ -207,6 +207,8 @@ EOF
 )"
 ```
 
+**Heredoc quoting (mandatory):** The body uses a single-quoted delimiter (`<<'EOF'`), which already disables all shell expansion. Write backticks and `$` **literally** — do NOT backslash-escape them. Escaping (`\``) injects literal backslashes into the PR body, so every code span renders as `\`text\`` on GitHub.
+
 **PR group check (mandatory when issue has a `pr-group` label or references sub-issues):**
 If the implemented issue bundles multiple sub-issues (e.g. `#245` covering `#237` and `#242`), add a `Closes #N` line for **each** sub-issue in the PR body. GitHub only auto-closes issues that appear explicitly with `Closes`/`Fixes`/`Resolves` — the umbrella issue body is not scanned. Scan the issue body for `#NNN` patterns to identify sub-issues:
 
