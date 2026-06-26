@@ -1,5 +1,20 @@
 # implement Optimization Log
 
+## Session 2026-06-08 — Step 9
+
+### Edits Applied
+- [op: insert_before "git add"] Pre-staging path check — `git status` before staging, note CWD risk, offer `git -C` workaround. Reasoning: Step 8 logged this edit but never applied it to the skill file; same `go/go/internal/...` failure recurred this session. Support count: 2 (confirmed systematic).
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- Step 8 edit was logged in CHANGELOG but not applied to SKILL.md. Retroactively applied in Step 9. Meta-issue: improve-skill should verify the edit landed before writing the changelog entry.
+
+### Meta Notes
+- Session: implement #253/#254, simplify, address-and-merge. All clean except the git add retry.
+- Convergence: stable overall. One mechanical repeat failure now definitively fixed. Skill is mature.
+
 ## Session 2026-06-07 — Step 8
 
 ### Edits Applied
