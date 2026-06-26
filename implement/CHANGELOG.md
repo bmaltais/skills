@@ -180,3 +180,22 @@
 - Two PRs shipped (#20, #21), both merged with zero review comments.
 - Step 9 regression confirmed: documentation update step worked as intended — README and overlays updated without prompting.
 - Convergence: strong. Skill is performing well. The flag-ordering note is the only new mechanical gap identified across many sessions.
+
+---
+
+## Session 2026-06-25 — Step 10
+
+### Edits Applied
+- [op: insert_after, Phase 5 Branch section] Added multi-account auth check (`gh auth status`) before `git push` — reasoning: push failed 403 because wrong GitHub account was active (`bernardmaltais` vs `bmaltais`); would have been caught by a pre-push `gh auth status` check. Support: 1.
+- [op: insert_after, Test isolation section] Added filesystem-state convention check — reasoning: `os.Stat` check in ReconcilePlan against `CachePath`-derived paths broke 11 existing tests because tests use empty `t.TempDir()` as `CachePath`. The rule prompts asking "what does an empty field value mean in tests vs production?" before writing state-dependent checks. Support: 1.
+
+### Deferred Edits
+(none)
+
+### Observed Regressions from Previous Edits
+(none observed — documentation update step, red-phase gate, and code-path coverage rules all worked as intended this session)
+
+### Meta Notes
+- Both edits are small additions reinforcing existing sections (pre-push and test isolation). No deletions.
+- The test-infrastructure failure (11 regressions) was the highest-friction event; it required a redesign iteration and test updates. The auth failure was resolved in one command.
+- Convergence: slight increase in friction vs. previous session (which had zero). Two targeted edits applied; learning rate remains conservative.

@@ -100,6 +100,14 @@ git log --oneline main...HEAD
 
 If any commits appear that you did not author in this session, stop. Rebase off the stale ancestor before pushing:
 
+**Multi-account auth check:** In multi-account environments, verify the correct GitHub account is active before pushing — a wrong active account silently causes a 403:
+
+```
+gh auth status
+```
+
+If the wrong account is active, switch before pushing: `gh auth switch --user <account>`
+
 ```
 git rebase --onto main <last-unwanted-commit> HEAD
 ```
@@ -136,6 +144,8 @@ If no correct seam exists, document the gap in the PR body.
 - `t.Setenv("HOME", t.TempDir())` — isolates config/state that resolves via `os.UserHomeDir()`
 - `t.TempDir()` for writable directories — auto-cleaned after the test
 - Any `os.Setenv` / mock FS setup the existing tests use
+
+**Filesystem-state convention check:** When your new production code checks filesystem state (e.g. `os.Stat`, file existence, directory contents) on a field that tests populate with `t.TempDir()`, ask: *what does an empty temp dir imply about the production invariant?* If existing tests use bare empty dirs but production always has a populated directory, your check will fire falsely in tests. Identify the sentinel that distinguishes populated vs empty (e.g. a `.git` subdirectory for git clones) and guard the check accordingly — or update the test helper to match the production state.
 
 If any existing test in the package uses `t.Setenv("HOME", ...)`, all new tests in that file must use it too — even if the code path under test does not *currently* write to HOME. This prevents surprises when the implementation evolves.
 
