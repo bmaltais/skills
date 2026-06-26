@@ -43,7 +43,7 @@ Start by determining what code has changed:
 
 2. **Fall back to unpushed commits** if no meaningful local changes
    - Run `git log origin/HEAD..HEAD --oneline` to check for commits not yet pushed to the remote
-   - If multiple unpushed commits exist, diff the full range: `git diff origin/HEAD..HEAD`
+   - **Diff against the merge-base, not the raw range.** Compute `git merge-base origin/HEAD HEAD` and diff `git diff <merge-base>..HEAD`. Using `git diff origin/HEAD..HEAD` directly is wrong when the base branch has advanced past your branch point — the range then includes reverse-diffs of commits that landed on the base after you branched, polluting the review with files you never touched. The merge-base isolates only the branch's own changes.
    - If no unpushed commits exist, fall back to the last commit: `git diff HEAD~1 HEAD`
    - This ensures the skill reviews the full body of in-progress work, not just the tip commit
 
