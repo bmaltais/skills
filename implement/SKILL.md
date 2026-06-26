@@ -71,10 +71,6 @@ Do not start implementing until exploration is complete.
 
 Before writing code, map each acceptance criterion to a concrete implementation step. State the plan in one short paragraph or bullet list — this is for your own orientation, not a user-facing document. Identify any risks or ambiguities and surface them to the maintainer now, before making changes.
 
-**The final step in every plan must be:** `Run /simplify on all changes before committing`
-
-When tracking progress with `manage_todo_list`, include this as an explicit todo item. It must appear in the list and be marked `completed` before any `git add`.
-
 If the brief is under-specified for any criterion, ask one targeted question. Do not ask more than needed — if you can make a reasonable judgment call, make it and document it in the PR body.
 
 ## Phase 5 — Implement
@@ -179,7 +175,7 @@ This catches ordering bugs where a field is updated in the locked struct but not
 
 ### Documentation update (mandatory for enhancements)
 
-After the verification loop passes and before running simplify, check whether user-facing documentation needs updating:
+After the verification loop passes, check whether user-facing documentation needs updating:
 
 1. **README.md** — does the new feature add CLI flags, API fields, config options, or change behavior described in the README? If yes, update it.
 2. **Skill files** (e.g. `skills/*/SKILL.md`) — does the feature change what agents should know about (new commands, new JSON fields, new decision logic)? If yes, update.
@@ -187,50 +183,7 @@ After the verification loop passes and before running simplify, check whether us
 
 Do NOT ship a feature PR without updating the docs that describe the feature. This includes JSON output examples, config file examples, and CLI help text shown in documentation.
 
-### Simplify before committing (mandatory)
-
-Before running `git commit`, invoke the simplify skill on the uncommitted changes. **This means actually executing the simplify workflow** — spawning the 3 parallel review agents (code reuse, code quality, efficiency) as defined in the simplify SKILL.md. A personal glance at the diff does NOT count as running simplify.
-
-```
-/simplify
-```
-
-The simplify skill will:
-1. Collect the git diff
-2. Spawn 3 specialized review agents concurrently
-3. Aggregate findings and apply high-confidence fixes
-
-Apply all fixes the simplify skill proposes. Only then commit. This catches code-quality issues before they become PR review comments.
-
-**Anti-pattern:** Do not substitute your own judgment ("the code looks clean") for the actual skill invocation. The 3 agents catch issues the implementing agent is blind to (reuse opportunities against the broader codebase, efficiency patterns, quality issues).
-
-#### Fallback: environments without sub-agents (e.g. pi)
-
-If the runtime does not support spawning sub-agents, perform a **structured inline review** — three separate passes over the full `git diff`, each with a forced checklist. This is NOT the same as glancing at the diff and saying "looks clean."
-
-**Pass 1 — Code Reuse** (run `grep`/`rg` to answer each question):
-- [ ] Does any new function duplicate logic already present elsewhere in the repo? Search for key verbs/nouns from the new code.
-- [ ] Are there existing helpers (error formatting, HTTP client setup, config loading) that the new code should call instead of re-implementing?
-- [ ] If >50% of a block matches an existing function, extract or call the existing one.
-
-**Pass 2 — Code Quality:**
-- [ ] Any magic numbers or strings that should be constants?
-- [ ] Any exported symbols missing doc comments (Go) or equivalent?
-- [ ] Any error paths that swallow context (e.g. returning generic message when the original error is available)?
-- [ ] Any fallback/recovery paths that silently discard errors? (e.g. `if err != nil { /* fall through to next option */ }` when the error indicates corruption, not absence)
-- [ ] Dead code or unused imports? Run the language's lint tool (`go vet`, `eslint`, etc.).
-
-**Pass 3 — Efficiency:**
-- [ ] Any network/IO calls inside a loop?
-- [ ] Any unbounded allocations (e.g. appending in a loop without pre-sizing when length is known)?
-- [ ] Any blocking calls that could be concurrent?
-
-For each pass, **show your grep commands and their results** — this forces actual codebase inspection rather than imagination. Report findings with file:line references. Apply high-confidence fixes before committing. If all three passes produce zero findings, state that explicitly with evidence (the grep outputs).
-
 ## Phase 6 — Ship
-
-**GATE — simplify must run before any `git add`.**
-If `/simplify` was not already invoked in this session (i.e., the 3 parallel review agents were not actually spawned and their output collected), run it now and apply all high-confidence fixes before proceeding. A self-assessment ("looks clean") does NOT satisfy this gate. Do not skip this even for small changes. In environments without sub-agents, the structured 3-pass inline review (see "Fallback" above) satisfies this gate — but only if grep commands were actually executed and results shown.
 
 ```
 git add <specific files>
@@ -306,8 +259,6 @@ Work through each inline comment:
 - ALWAYS remove `ready-for-agent` from the issue when the PR is open
 - ALWAYS run type checker and linter before pushing — fix errors, never suppress
 - ALWAYS surface ambiguities in Phase 4, not mid-implementation
-- ALWAYS run `/simplify` as the final step of Phase 4's plan before any `git add` — it must be a tracked todo item, not a reminder
-- NEVER commit without `/simplify` having run in the same session
 
 ## Vocabulary
 
