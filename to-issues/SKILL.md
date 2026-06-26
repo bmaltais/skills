@@ -22,8 +22,6 @@ If you have not already explored the codebase, do so to understand the current s
 
 Look for opportunities to prefactor the code to make the implementation easier. "Make the change easy, then make the easy change."
 
-**Verify blockers before naming them.** For each proposed blocker, confirm the blocking issue/PR is still open and unresolved. If the fix is already in the codebase or the issue is closed, remove it from the dependency chain and note this to the user.
-
 ### 3. Draft vertical slices
 
 Break the plan into **tracer bullet** issues. Each issue is a thin vertical slice that cuts through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
@@ -57,8 +55,6 @@ Iterate until the user approves the breakdown.
 For each approved slice, publish a new issue to the issue tracker. Use the issue body template below. These issues are considered ready for AFK agents, so publish them with the correct triage label unless instructed otherwise.
 
 Publish issues in dependency order (blockers first) so you can reference real issue identifiers in the "Blocked by" field.
-
-**Issue body format:** Use the template below by default. If the triage skill is co-active in this session (its AGENT-BRIEF.md was loaded), use the agent brief format from that skill instead — the two formats serve the same purpose and the triage format takes precedence when both are present.
 
 <issue-template>
 ## Parent
