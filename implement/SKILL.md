@@ -71,10 +71,6 @@ Do not start implementing until exploration is complete.
 
 Before writing code, map each acceptance criterion to a concrete implementation step. State the plan in one short paragraph or bullet list — this is for your own orientation, not a user-facing document. Identify any risks or ambiguities and surface them to the maintainer now, before making changes.
 
-**The final step in every plan must be:** `Run /simplify on all changes before committing`
-
-When tracking progress with `manage_todo_list`, include this as an explicit todo item. It must appear in the list and be marked `completed` before any `git add`.
-
 If the brief is under-specified for any criterion, ask one targeted question. Do not ask more than needed — if you can make a reasonable judgment call, make it and document it in the PR body.
 
 ## Phase 5 — Implement
@@ -100,6 +96,14 @@ git log --oneline main...HEAD
 
 If any commits appear that you did not author in this session, stop. Rebase off the stale ancestor before pushing:
 
+**Multi-account auth check:** In multi-account environments, verify the correct GitHub account is active before pushing — a wrong active account silently causes a 403:
+
+```
+gh auth status
+```
+
+If the wrong account is active, switch before pushing: `gh auth switch --user <account>`
+
 ```
 git rebase --onto main <last-unwanted-commit> HEAD
 ```
@@ -111,12 +115,15 @@ git rebase --onto main <last-unwanted-commit> HEAD
 - Follow the project's existing conventions (formatting, naming, test style)
 - Run the project's type checker and linter as you go; fix errors immediately
 - **Prefer compound tools over sequential pairs** — use `read_and_patch` instead of `read` → `edit`, `create_and_run` instead of `write` → `bash`, `bash_and_run` instead of `bash` → `bash`. Check the compound tool table in system prompt before reaching for basic tools.
+- **Use `patch-verify` for literal replacements when it is installed** — if `patch-verify` is on `$PATH` (check with `command -v patch-verify`), use it via terminal instead of the `edit` tool for any single-file literal string replacement. It validates uniqueness, shows a diff, and is the canonical tool for this repo. Using `replace_string_in_file` or `multi_replace_string_in_file` when `patch-verify` is available is a missed-use anti-pattern.
 - **After any full-file write or large rewrite**, run the build immediately before proceeding — catches unused imports, syntax errors, and type mismatches while context is fresh
 - **When adding side-effects to a widely-called function** (e.g. Load, Init, New), run the full test suite immediately — these functions are exercised by tests using fake environments (temp HOME, mock FS) and side-effects like auto-detection or network calls will break them
 - **Never use `sed`, `awk`, or bash string manipulation to modify source code** — always use the `edit` tool (or `write` for full rewrites). `sed` is acceptable for querying (grep, line counts) but not for code changes: it cannot validate replacements were unique, risks partial matches, and produces cascading errors (renamed functions clashing, orphaned references)
-- **Patch boundaries must respect structural blocks** — when using `read_and_patch` or `edit`, ensure `old_str` captures complete structural units (matching braces, full if/for/switch blocks). Never end `old_str` in the middle of a block where the replacement might drop a closing `}`, an adjacent statement, or a loop terminator. If inserting lines inside a block, include the block's closing brace in both `old_str` and `new_str` to prevent structural damage.
+- **Patch boundaries must respect structural blocks** — when using `read_and_patch` or `edit`, ensure `old_str` captures complete structural units (matching braces, full if/for/switch blocks). Never end `old_str` in the middle of a block where the replacement might drop a closing `}`, an adjacent statement, or a loop terminator. If inserting lines inside a block, include the block's closing brace in both `old_str` and `new_str` to prevent structural damage. When inserting a new function *before* an existing function, never use just the next function's signature line as `old_str` — include the signature plus 2–3 body lines so the replacement preserves the structural boundary. Prefer inserting after the *closing brace of the preceding function* instead of before the next function's signature.
 
 - **Verify stdlib APIs before writing:** When you plan to use a Go standard library type, field, or method that you have not read in codebase files during this session, run `go doc <pkg> <Symbol>` to confirm it exists before writing. Do not rely on training-data memory — struct field availability is especially unreliable (e.g. `http.Transport` has `ReadBufferSize`/`WriteBufferSize`; `http.Server` does not). Memory errors here cost a write → build-fail → revert cycle.
+
+- **Verify internal/project symbols before referencing them:** Before calling a project-internal helper, constructor, or test harness you have not read this session (e.g. `resolveDefaultAgent`, `buildRelinkCmd`), `grep` for its definition to confirm it exists and matches the signature you assume. Do not invent a plausible-sounding helper or a CLI-command test harness from memory — assumed-but-absent internal symbols cost a full write → fix cycle (and for tests, a complete rewrite). When no existing test harness exists for a behavior (e.g. cobra command-invocation tests), prefer extracting the pure logic into a standalone function and unit-testing that directly rather than inventing a command-execution harness.
 
 - **Go unexport refactor (bulk rename exported → unexported functions):** Use `vscode_renameSymbol` per function, or make each rename individually in the edit tool. After unexporting, run `go build ./...` immediately. Do not attempt bulk sed renames. Also update every `_test.go` file in the same package:
   1. For each test file that calls unexported functions, change its package declaration from `package X_test` to `package X` and remove the self-import (`"github.com/.../X"`).
@@ -135,6 +142,8 @@ If no correct seam exists, document the gap in the PR body.
 - `t.Setenv("HOME", t.TempDir())` — isolates config/state that resolves via `os.UserHomeDir()`
 - `t.TempDir()` for writable directories — auto-cleaned after the test
 - Any `os.Setenv` / mock FS setup the existing tests use
+
+**Filesystem-state convention check:** When your new production code checks filesystem state (e.g. `os.Stat`, file existence, directory contents) on a field that tests populate with `t.TempDir()`, ask: *what does an empty temp dir imply about the production invariant?* If existing tests use bare empty dirs but production always has a populated directory, your check will fire falsely in tests. Identify the sentinel that distinguishes populated vs empty (e.g. a `.git` subdirectory for git clones) and guard the check accordingly — or update the test helper to match the production state.
 
 If any existing test in the package uses `t.Setenv("HOME", ...)`, all new tests in that file must use it too — even if the code path under test does not *currently* write to HOME. This prevents surprises when the implementation evolves.
 
@@ -168,7 +177,7 @@ This catches ordering bugs where a field is updated in the locked struct but not
 
 ### Documentation update (mandatory for enhancements)
 
-After the verification loop passes and before running simplify, check whether user-facing documentation needs updating:
+After the verification loop passes, check whether user-facing documentation needs updating:
 
 1. **README.md** — does the new feature add CLI flags, API fields, config options, or change behavior described in the README? If yes, update it.
 2. **Skill files** (e.g. `skills/*/SKILL.md`) — does the feature change what agents should know about (new commands, new JSON fields, new decision logic)? If yes, update.
@@ -176,50 +185,7 @@ After the verification loop passes and before running simplify, check whether us
 
 Do NOT ship a feature PR without updating the docs that describe the feature. This includes JSON output examples, config file examples, and CLI help text shown in documentation.
 
-### Simplify before committing (mandatory)
-
-Before running `git commit`, invoke the simplify skill on the uncommitted changes. **This means actually executing the simplify workflow** — spawning the 3 parallel review agents (code reuse, code quality, efficiency) as defined in the simplify SKILL.md. A personal glance at the diff does NOT count as running simplify.
-
-```
-/simplify
-```
-
-The simplify skill will:
-1. Collect the git diff
-2. Spawn 3 specialized review agents concurrently
-3. Aggregate findings and apply high-confidence fixes
-
-Apply all fixes the simplify skill proposes. Only then commit. This catches code-quality issues before they become PR review comments.
-
-**Anti-pattern:** Do not substitute your own judgment ("the code looks clean") for the actual skill invocation. The 3 agents catch issues the implementing agent is blind to (reuse opportunities against the broader codebase, efficiency patterns, quality issues).
-
-#### Fallback: environments without sub-agents (e.g. pi)
-
-If the runtime does not support spawning sub-agents, perform a **structured inline review** — three separate passes over the full `git diff`, each with a forced checklist. This is NOT the same as glancing at the diff and saying "looks clean."
-
-**Pass 1 — Code Reuse** (run `grep`/`rg` to answer each question):
-- [ ] Does any new function duplicate logic already present elsewhere in the repo? Search for key verbs/nouns from the new code.
-- [ ] Are there existing helpers (error formatting, HTTP client setup, config loading) that the new code should call instead of re-implementing?
-- [ ] If >50% of a block matches an existing function, extract or call the existing one.
-
-**Pass 2 — Code Quality:**
-- [ ] Any magic numbers or strings that should be constants?
-- [ ] Any exported symbols missing doc comments (Go) or equivalent?
-- [ ] Any error paths that swallow context (e.g. returning generic message when the original error is available)?
-- [ ] Any fallback/recovery paths that silently discard errors? (e.g. `if err != nil { /* fall through to next option */ }` when the error indicates corruption, not absence)
-- [ ] Dead code or unused imports? Run the language's lint tool (`go vet`, `eslint`, etc.).
-
-**Pass 3 — Efficiency:**
-- [ ] Any network/IO calls inside a loop?
-- [ ] Any unbounded allocations (e.g. appending in a loop without pre-sizing when length is known)?
-- [ ] Any blocking calls that could be concurrent?
-
-For each pass, **show your grep commands and their results** — this forces actual codebase inspection rather than imagination. Report findings with file:line references. Apply high-confidence fixes before committing. If all three passes produce zero findings, state that explicitly with evidence (the grep outputs).
-
 ## Phase 6 — Ship
-
-**GATE — simplify must run before any `git add`.**
-If `/simplify` was not already invoked in this session (i.e., the 3 parallel review agents were not actually spawned and their output collected), run it now and apply all high-confidence fixes before proceeding. A self-assessment ("looks clean") does NOT satisfy this gate. Do not skip this even for small changes. In environments without sub-agents, the structured 3-pass inline review (see "Fallback" above) satisfies this gate — but only if grep commands were actually executed and results shown.
 
 ```
 git add <specific files>
@@ -242,6 +208,8 @@ Closes #N
 EOF
 )"
 ```
+
+**Heredoc quoting (mandatory):** The body uses a single-quoted delimiter (`<<'EOF'`), which already disables all shell expansion. Write backticks and `$` **literally** — do NOT backslash-escape them. Escaping (`\``) injects literal backslashes into the PR body, so every code span renders as `\`text\`` on GitHub.
 
 **PR group check (mandatory when issue has a `pr-group` label or references sub-issues):**
 If the implemented issue bundles multiple sub-issues (e.g. `#245` covering `#237` and `#242`), add a `Closes #N` line for **each** sub-issue in the PR body. GitHub only auto-closes issues that appear explicitly with `Closes`/`Fixes`/`Resolves` — the umbrella issue body is not scanned. Scan the issue body for `#NNN` patterns to identify sub-issues:
@@ -295,8 +263,6 @@ Work through each inline comment:
 - ALWAYS remove `ready-for-agent` from the issue when the PR is open
 - ALWAYS run type checker and linter before pushing — fix errors, never suppress
 - ALWAYS surface ambiguities in Phase 4, not mid-implementation
-- ALWAYS run `/simplify` as the final step of Phase 4's plan before any `git add` — it must be a tracked todo item, not a reminder
-- NEVER commit without `/simplify` having run in the same session
 
 ## Vocabulary
 
