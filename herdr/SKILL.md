@@ -150,6 +150,19 @@ herdr wait output 1-3 --match "server.*ready" --regex --timeout 30000
 
 if it times out, exit code is `1`.
 
+> ⚠️ **Command echo false-match:** `wait output` scans the full recent scrollback buffer, including the line where the command was run. If your match string appears anywhere in the command itself (e.g. `echo 'DONE'` where `DONE` is your marker), the wait resolves immediately against the command echo — not real completion. **Avoid this by:**
+> 1. Using match strings that cannot appear in the command text (e.g. a UUID or a timestamp suffix), or
+> 2. Using **sentinel files** instead — more reliable for long-running commands:
+>
+> ```bash
+> # in the pane command:
+> some-long-command; touch /tmp/job.done
+>
+> # in your agent:
+> while [ ! -f /tmp/job.done ]; do sleep 10; done
+> rm /tmp/job.done
+> ```
+
 ## wait for an agent status
 
 block until another agent reaches a specific status:
