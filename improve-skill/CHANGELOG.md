@@ -34,3 +34,20 @@
 ### Meta Notes
 - First optimization step. Single, clear, mandatory addition. Skill is otherwise solid.
 - Convergence: N/A (baseline)
+
+---
+
+## Session 2026-07-04 — Step 1 (improve-skill self-improvement)
+
+### Edits Applied
+- [op: replace] Removed `### Quality audit — writing-great-skills` subsection from Step 7 and promoted it to `## Step 7.5 — Quality Audit (Mandatory)` — a first-class numbered step with an explicit `read` tool call on `writing-great-skills/SKILL.md`, exhaustive scope ("every changed section"), and a completion criterion ("Do not proceed to Step 8 until this is done"). Reasoning: in this session the audit was run mentally without loading the doc, causing 4 issues to be missed and requiring a correction round-trip. Root cause: buried subsection framing made it skippable. Support count: 1 user correction ("did you run write-better-skills...?"). 
+
+### Deferred Edits
+- (none)
+
+### Observed Regressions from Previous Edits
+- N/A — first changelog entry for improve-skill itself.
+
+### Meta Notes
+- The skill is well-structured overall. Single failure mode: audit enforcement. One targeted edit, no other friction.
+- Convergence: N/A (first entry).

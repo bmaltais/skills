@@ -115,17 +115,6 @@ Read the owning skill file before editing it. Apply the minimum change that addr
 - **Add a decision rule** for coverage gaps
 - **Delete or replace** rules that actively cause errors
 
-### Quality audit — writing-great-skills
-
-Before committing each edit, load `writing-great-skills` and run a quick audit on the *changed section*. Hunt specifically:
-
-- **No-ops** — does this line change behaviour vs. the model's default? If not, delete it.
-- **Duplication** — is this meaning already present elsewhere in the skill? Collapse to one source.
-- **Sediment** — does this line still bear on what the skill does, or is it stale?
-- **Leading word opportunity** — can a repeated phrase collapse into one pretrained word that anchors the same behaviour with fewer tokens?
-
-A passing audit is part of the Step 8 gate — an edit that adds duplication or no-ops fails regression.
-
 ### Edit principles (from SkillOpt):
 - Edits must be **generalizable** — do not hardcode session-specific values
 - Only patch **gaps** in the skill — do not duplicate existing content
@@ -140,6 +129,17 @@ When a skill involves multi-step workflows, also consider:
 - **Reference files** — when the skill relies on external API specifics or repeated lookups
 
 When adding scripts: make them executable, self-documenting, and reference them from the skill.
+
+## Step 7.5 — Quality Audit (Mandatory)
+
+Use `read` on `~/.pi/agent/skills/writing-great-skills/SKILL.md`, then audit **every changed section** against all four criteria:
+
+- **No-ops** — does this line change behaviour vs. the model's default? Delete if not.
+- **Duplication** — is this meaning already present elsewhere in the skill? Collapse to one source.
+- **Sediment** — does this line still bear on what the skill does? Delete if not.
+- **Leading word opportunity** — can a repeated phrase collapse into one pretrained token?
+
+Revise any section that fails. **Completion criterion: every changed section passes all four criteria.** Do not proceed to Step 8 until this is done.
 
 ## Step 8 — Gate (Validate)
 
