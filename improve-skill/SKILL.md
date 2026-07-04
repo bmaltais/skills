@@ -76,8 +76,6 @@ Group proposed edits that address the same underlying issue. Merge them:
 - If two edits conflict, keep the one with higher support count
 - Remove redundant edits (one already implies the other)
 
-After merging, you should have a compact set of non-overlapping edits.
-
 ## Step 5 — Select (Gradient Clipping / Learning Rate)
 
 Rank merged edits by **impact × frequency × confidence**:
@@ -116,6 +114,17 @@ Read the owning skill file before editing it. Apply the minimum change that addr
 - **Add a concrete example** for accuracy issues
 - **Add a decision rule** for coverage gaps
 - **Delete or replace** rules that actively cause errors
+
+### Quality audit — writing-great-skills
+
+Before committing each edit, load `writing-great-skills` and run a quick audit on the *changed section*. Hunt specifically:
+
+- **No-ops** — does this line change behaviour vs. the model's default? If not, delete it.
+- **Duplication** — is this meaning already present elsewhere in the skill? Collapse to one source.
+- **Sediment** — does this line still bear on what the skill does, or is it stale?
+- **Leading word opportunity** — can a repeated phrase collapse into one pretrained word that anchors the same behaviour with fewer tokens?
+
+A passing audit is part of the Step 8 gate — an edit that adds duplication or no-ops fails regression.
 
 ### Edit principles (from SkillOpt):
 - Edits must be **generalizable** — do not hardcode session-specific values
@@ -167,13 +176,6 @@ Maintain a per-skill changelog at `~/.pi/agent/skills/<skill-name>/CHANGELOG.md`
 ### Meta Notes
 - Strategy: skill was getting verbose, preferred deletion over addition this round
 ```
-
-### What to record each session:
-1. **Date and step number** (monotonically increasing)
-2. **Edits applied** — op, target, reasoning, support count
-3. **Deferred edits** — P3 items parked for future signal
-4. **Regression observations** — if a previous edit visibly hurt this session, note it
-5. **Meta notes** — optimizer strategy shifts
 
 ### How to use history in future sessions:
 - **Before Step 3 (Reflect):** Read CHANGELOG.md to load context:
