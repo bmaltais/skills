@@ -191,6 +191,16 @@ When history has 3+ entries for a skill, briefly assess:
 
 Add a one-line convergence note to the session entry.
 
+## Step 9.5 — Sync Skills (Mandatory)
+
+After persisting the changelog, push all edited skills to remote:
+
+```bash
+skillpack sync
+```
+
+This ensures edits are not siloed in the local agent directory. Run after every improve-skill session, even if only one skill was changed.
+
 ## Step 10 — Meta-Skill Memory (Optional)
 
 If this is not the first time improving this skill (check CHANGELOG.md), briefly note:
