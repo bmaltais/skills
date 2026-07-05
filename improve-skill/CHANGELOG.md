@@ -51,3 +51,43 @@
 ### Meta Notes
 - The skill is well-structured overall. Single failure mode: audit enforcement. One targeted edit, no other friction.
 - Convergence: N/A (first entry).
+
+---
+
+## Session 2026-07-05 — Step 1 (self-application)
+
+### Edits Applied
+- [op: append] Added note to `implement` skill: "Read every file before editing it. Use `read` to inspect, `edit` to change. If `edit` fails with 'oldText not found', re-read the file first." Reasoning: observed 2× edit failures in this session where oldText didn't match because files weren't read first. Support count: 2 session signals.
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- None.
+
+### Meta Notes
+- First time improve-skill was used as a meta-skill in a real session. The `implement` skill was the target of improvement, not improve-skill itself.
+- Convergence: N/A (new skill being optimized).
+
+---
+
+## Session 2026-07-05 — Step 1 (self-application, continued)
+
+### Edits Applied
+- None (this session only observed failures, no direct edits to improve-skill itself).
+
+### Observed Failure Signals in Session
+1. Edit validation failure: tried to edit `repo.go` without reading first → oldText didn't match
+2. Edit validation failure: tried to edit `repo.go` PlainClone section without reading exact content → oldText didn't match
+3. Syntax error: used `fmt.Errorf` with multiline string in Go → should have used simpler formatting
+4. Test failure: `IsTransportAuthError` test failed because `errors.Is` wasn't used → existing codebase pattern
+
+### Root Causes
+1. Not reading files before editing (basic practice, should be explicit in skill)
+2. Not following existing codebase patterns (errors.Is vs direct comparison)
+3. Overcomplicating error formatting (multiline fmt.Errorf is tricky in Go)
+
+### Meta Notes
+- The `implement` skill was the target of improvement, not improve-skill.
+- The failures were execution issues, not skill gaps in improve-skill.
+- Convergence: N/A (new skill being optimized).
