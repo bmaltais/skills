@@ -1,0 +1,7 @@
+name: test
+repos:
+    - name: bmaltais-skills
+      url: https://github.com/bmaltais/skills
+skills:
+    - bmaltais-skills/address-and-merge
+    - bmaltais-skills/brainstorming
