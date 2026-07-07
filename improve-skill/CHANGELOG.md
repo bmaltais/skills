@@ -91,3 +91,23 @@
 - The `implement` skill was the target of improvement, not improve-skill.
 - The failures were execution issues, not skill gaps in improve-skill.
 - Convergence: N/A (new skill being optimized).
+
+---
+
+## Session 2026-07-07 — Step 3
+
+### Edits Applied
+- (to azure-devops-work-item-comment, not improve-skill itself)
+  [op: append] 3 rows added to "What does NOT work" — `--project` flag, relation-type friendly name, WIQL JSON bare list
+  [op: insert] Project-confirmation rule before work item creation
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- None.
+
+### Meta Notes
+- Session had no improve-skill-specific failures. All 4 edits went to azure-devops-work-item-comment.
+- Deferred-edit from Step 2 (Step 9 "How to use history" subsection duplication) still unconfirmed — no friction observed.
+- Convergence: improve-skill itself appears stable. Target was a different skill.
