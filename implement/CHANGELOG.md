@@ -15,3 +15,18 @@
 ### Meta Notes
 - Strategy: skill was minimal (5 lines) with a real gap at the end of its workflow (commit → nothing). Preferred extending the existing line + one appended step over restructuring.
 - Convergence: too early to assess (first entry).
+
+## Session 2026-07-08 — Step 2
+
+### Edits Applied
+- [op: replace] Line "Use /tdd where possible, at pre-agreed seams." replaced with a mandatory rule: every change ships with a test, use /tdd to find the seam even without prior agreement, and state explicitly when something is untestable — reasoning: this session shipped a GUI change with zero tests; the user had to explicitly ask ("did you implement tests... you should implement tests for all changes") before any were written. "Where possible" was read as optional and skipped by default.
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- (none — step 1's branch/PR edits worked correctly this session: work went to a new branch and the PR flow was already established)
+
+### Meta Notes
+- Strategy: same as step 1 — reinforce an existing line rather than add a new section, since the gap was a weak qualifier ("where possible") rather than a missing step.
+- Convergence: 2 sessions in, both edits triggered by direct user correction on distinct gaps (branching, testing) in the same short skill — skill was clearly undertrained at 5 lines; each pass is tightening a real gap, not churning previous edits.

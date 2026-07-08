@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 Implement the work described by the user in the spec or tickets.
 
-Use /tdd where possible, at pre-agreed seams.
+Every change ships with a test exercising the new or changed behavior — use /tdd to find the seam even when none was pre-agreed. If something is genuinely untestable, say so explicitly rather than skipping it silently.
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
