@@ -30,3 +30,21 @@
 ### Meta Notes
 - Strategy: same as step 1 — reinforce an existing line rather than add a new section, since the gap was a weak qualifier ("where possible") rather than a missing step.
 - Convergence: 2 sessions in, both edits triggered by direct user correction on distinct gaps (branching, testing) in the same short skill — skill was clearly undertrained at 5 lines; each pass is tightening a real gap, not churning previous edits.
+
+## Session 2026-07-08 — Step 3 (writing-great-skills structural review)
+
+### Edits Applied
+- [op: delete] Removed "Implement the work described by the user in the spec or tickets." — pure Duplication of the frontmatter description, no-op against the model's default behavior for a skill named `/implement`.
+- [op: replace] Converted the flat prose (5 paragraphs) into 6 numbered Steps — reasoning: this skill's two prior failures (dev-branch commit, skipped tests) were both premature-completion-shaped: the agent stopped before the sequence's real end (push+PR) or skipped a step tucked mid-paragraph. An explicit ordered list with the PR as the visible last step makes the full sequence's completion criterion checkable rather than buried in prose.
+- [op: replace] Moved branch creation to step 1 (was: "before committing", the second-to-last paragraph) — reasoning: creating the branch as the very first action, before any implementation work starts, is safer than a just-in-time instruction attached to the commit step; also removes the awkward forward-reference ("Commit there") that resulted from the old ordering.
+- [op: replace] Widened the description to name the full lifecycle (branch, TDD, review, PR) instead of just "implement a piece of work" — reasoning: this is a user-invoked skill, so the description is the human's recall aid (cognitive load), and it undersold what invoking it actually does.
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- (none — steps 1 and 2's content preserved, only reordered/restructured)
+
+### Meta Notes
+- Strategy shift: first two sessions patched gaps by extending/appending prose; this pass restructured the whole body into steps once the pattern (skipped steps late in a flat-prose sequence) repeated twice. Prose-patching a skill that's fundamentally a sequence was itself the drift to fix.
+- Convergence: 3 sessions in — no regressions observed, each pass fixed a distinct real gap. Confidence high enough to leave learning rate as-is (small, targeted edits) rather than increase it.
