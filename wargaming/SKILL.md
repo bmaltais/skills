@@ -47,6 +47,10 @@ Completion criterion: every success criterion named anywhere in the mission brie
 
 If the mission contains `{{VARIABLE}}` placeholders, add a move (or a Recon item) for how the executor resolves each one before it's used downstream — don't leave resolution implicit.
 
+## Saving the plan
+
+Always persist the finished wargame as a Markdown file under a `wargame/` folder at the root of the repo the mission targets (create the folder if it doesn't exist; if there is no repo, use the current working directory). Name it `YYYY-MM-DD-<short-kebab-slug>.md` using today's date. Write the file with the full plan verbatim, then also show the plan (or a summary plus the file path) in the conversation. Include a one-line header in the file recording the generation date and, if in a git repo, the branch and HEAD commit at planning time.
+
 ## Output format
 
 ```
