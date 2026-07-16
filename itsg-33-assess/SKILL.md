@@ -17,15 +17,33 @@ whose relevant files changed; reuse cached findings for the rest.
 
 1. **Prompt** for system name and system boundary description.
 2. **Confirm** security profile — default PBMM; accept override.
-3. **Detect** tracker mode: GitHub remote present → `github`; absent → `local`.
+3. **Detect** tracker mode from `git remote -v`:
+
+   | Remote contains | `tracker` |
+   |---|---|
+   | `github.com` | `github` |
+   | `dev.azure.com` | `azure-devops` |
+   | neither | `local` |
 4. **Write** `security/itsg33.yaml`:
    ```yaml
    profile: PBMM
    system_name: <value>
    system_boundary: <value>
-   tracker: <github | local>
+   tracker: <github | azure-devops | local>
    ```
-   Completion: file exists and all four fields are populated.
+   For `tracker: azure-devops` only, also write `ado_org`, `ado_project`, `ado_repo`, parsed
+   from the remote URL:
+   - HTTPS form: `https://[<user>@]dev.azure.com/<org>/<project>/_git/<repo>`
+   - SSH form: `git@ssh.dev.azure.com:v3/<org>/<project>/<repo>`
+
+   ```yaml
+   ado_org: https://dev.azure.com/<org>
+   ado_project: <project>
+   ado_repo: <repo>
+   ```
+
+   Completion: file exists, all four base fields are populated, and (for `tracker:
+   azure-devops`) `ado_org`/`ado_project`/`ado_repo` are also populated.
 5. **Create** folder structure:
    - `security/evidence/` — one `.md` per assessed control
    - `security/gaps/` — local gap files (used when `tracker: local`)
@@ -221,17 +239,42 @@ For each **Fail** finding, create a gap issue only if no open gap already exists
 that control.
 
 **GitHub mode** (`tracker: github`):
-- Create a GitHub Issue with:
-  - Title: `[itsg-33:gap] <Control ID> — <Control Name>`
-  - Labels: `itsg-33:gap`, `P1` / `P2` / `P3` (from control's severity in `controls.md`)
-  - Body: control ID, finding, confidence note, recommended action, link to evidence card
-- Skip if an open issue with the same title already exists.
+```bash
+bash skills/itsg-33-assess/scripts/gh-list-tagged-issues.sh itsg-33:gap
+```
+- Skip creation if a returned issue's title matches `[itsg-33:gap] <Control ID> — <Control Name>`.
+- Otherwise, write the issue body (control ID, finding, confidence note, recommended action,
+  link to evidence card) to a scratch file, then:
+```bash
+bash skills/itsg-33-assess/scripts/gh-create-issue.sh \
+  "[itsg-33:gap] <Control ID> — <Control Name>" \
+  "itsg-33:gap,<P1|P2|P3>" \
+  <body-file>
+```
+
+**Azure DevOps mode** (`tracker: azure-devops`):
+```bash
+bash skills/itsg-33-assess/scripts/ado-list-tagged-items.sh "<ado_org>" "<ado_project>" itsg-33:gap
+```
+- Skip creation if a returned item's title matches `[itsg-33:gap] <Control ID> — <Control Name>`.
+- Otherwise, write the description as simple HTML (`<p>`, `<ul>`, `<code>` — `System.Description`
+  is a rich-text HTML field, not Markdown) with the same fields, then:
+```bash
+bash skills/itsg-33-assess/scripts/ado-create-work-item.sh \
+  "<ado_org>" "<ado_project>" Issue \
+  "[itsg-33:gap] <Control ID> — <Control Name>" \
+  "itsg-33:gap; <P1|P2|P3>" \
+  <description-file>
+```
 
 **Local mode** (`tracker: local`):
 - Write `security/gaps/<control-id>.md` with the same fields.
 - Skip if the file already exists.
 
-Completion: every Fail finding has a gap issue or gap file; no duplicates created.
+If either script exits non-zero, its stderr names exactly what went wrong; report this to the
+user rather than retrying silently.
+
+Completion: every Fail finding has a gap issue, work item, or gap file; no duplicates created.
 
 ### Step 7 — Regenerate assessment report (Markdown)
 
