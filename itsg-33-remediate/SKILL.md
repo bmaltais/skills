@@ -18,23 +18,35 @@ Read `security/itsg33.yaml` to determine tracker mode.
 
 **GitHub mode** (`tracker: github`):
 ```bash
-gh issue list --label itsg-33:gap --state open --json number,title,body,labels
+bash skills/itsg-33-remediate/scripts/gh-list-tagged-issues.sh itsg-33:gap
 ```
+
+**Azure DevOps mode** (`tracker: azure-devops`):
+```bash
+bash skills/itsg-33-remediate/scripts/ado-list-tagged-items.sh "<ado_org>" "<ado_project>" itsg-33:gap
+```
+For each returned `id`, fetch full field values:
+```bash
+az boards work-item show --id <id> --org "<ado_org>" -o json
+```
+Control ID/name are parsed from the title (`[itsg-33:gap] <Control ID> — <Control Name>` — the
+same format `itsg-33-assess` used to create it). Source reference is the work item ID/URL
+(`<ado_org>/<ado_project>/_workitems/edit/<id>`).
 
 **Local mode** (`tracker: local`):
 Read every file in `security/gaps/`, **excluding** files ending in
 `-needs-test.md` — those are tasks created by a prior Step 4, not gaps.
 
-For every open gap (either mode), also read its linked evidence card,
-`security/evidence/<control-id>.md`. The evidence card — not the gap issue or
-gap file — is the source of truth for **Severity**, since `evidence-card.md`'s
+For every open gap (any mode), also read its linked evidence card,
+`security/evidence/<control-id>.md`. The evidence card — not the gap issue, work item, or gap
+file — is the source of truth for **Severity**, since `evidence-card.md`'s
 `**Severity:** <P1 | P2 | P3>` header field is the only place severity is
-recorded in a form both tracker modes can read the same way (GitHub conveys it
-only via issue label, which local mode has no equivalent of).
+recorded in a form every tracker mode can read the same way (GitHub conveys it only via issue
+label and Azure DevOps only via a tag, neither of which local mode has an equivalent of).
 
 Build one record per gap with: control ID, control name, severity, finding,
 confidence note, recommended action, evidence card path, and a source
-reference (issue number or gap file path). Completion: every open gap
+reference (issue number, work item ID, or gap file path). Completion: every open gap
 (possibly zero) is loaded into this common shape. If there are zero open gaps,
 report "no open ITSG-33 gaps found" and stop — do not proceed to Step 2.
 
@@ -70,10 +82,24 @@ must match or beat, and what Step 8's PR body cites as the "before" result.
 **If no runner is found:** stop — do not propose or apply a fix for this gap.
 Create a needs-test task instead:
 
-- GitHub mode: open an Issue labelled `itsg-33:needs-test`, titled
-  `[itsg-33:needs-test] <control-id> — write failing test`, with a body
-  explaining the gap needs a test that fails against the current code before
+- GitHub mode:
+  ```bash
+  bash skills/itsg-33-remediate/scripts/gh-create-issue.sh \
+    "[itsg-33:needs-test] <control-id> — write failing test" \
+    itsg-33:needs-test \
+    <body-file>
+  ```
+  where `<body-file>` explains the gap needs a test that fails against the current code before
   `itsg-33-remediate` can touch it.
+- Azure DevOps mode:
+  ```bash
+  bash skills/itsg-33-remediate/scripts/ado-create-work-item.sh \
+    "<ado_org>" "<ado_project>" Issue \
+    "[itsg-33:needs-test] <control-id> — write failing test" \
+    itsg-33:needs-test \
+    <description-file>
+  ```
+  with the same explanation, written as simple HTML.
 - Local mode: write `security/gaps/<control-id>-needs-test.md` with the same
   content.
 
@@ -114,18 +140,19 @@ discarding them. Completion: the Step 4 command exits clean on this branch.
 
 ### Step 8 — Open draft PR
 
-First, check whether a usable GitHub remote exists (the same check `itsg-33-assess` Step 1
+First, check whether a usable remote exists (the same check `itsg-33-assess` Step 1
 uses to detect tracker mode):
 
 ```bash
 git remote -v
 ```
 
-**If no remote exists:** stop here — do not run `gh pr create` (there is nothing to open a PR
-against). Tell the user: the fix is committed on branch `itsg33/fix/<control-id>` with tests
-green, but no draft PR was opened because this repo has no GitHub remote; push a remote and
-re-invoke this step (or open the PR manually) once one exists. Completion (no-remote case): the
-branch and its green commit exist; the user has been told why no PR was opened.
+**If no remote exists (`tracker: local`):** stop here — do not attempt to open a PR (there is
+nothing to open one against). Tell the user: the fix is committed on branch
+`itsg33/fix/<control-id>` with tests green, but no draft PR was opened because this repo has no
+remote; push a remote and re-invoke this step (or open the PR manually) once one exists.
+Completion (no-remote case): the branch and its green commit exist; the user has been told why no
+PR was opened.
 
 **If a remote exists:** proceed as below. Title: `fix(<control-id>): <control name> — <one-line summary>`.
 
@@ -150,13 +177,34 @@ Body (fully self-contained — the reviewer should need nothing else open):
 
 The closing line depends on tracker mode:
 - GitHub mode: `Closes #<gap-issue-number>`
+- Azure DevOps mode: none — the PR is linked to the work item directly by the script (see
+  below), not via a body keyword.
 - Local mode: `Resolves local gap: security/gaps/<control-id>.md` — since
   there's no merge-triggered auto-close in local mode, follow it with a line
   asking the user to delete that file once this PR merges.
 
+**GitHub mode:**
 ```bash
-gh pr create --draft --title "<title>" --body "<body>"
+bash skills/itsg-33-remediate/scripts/gh-create-pr.sh "<title>" <body-file> <gap-issue-number>
 ```
+The script appends the `Closes #<N>` line to the body itself.
+
+**Azure DevOps mode:**
+```bash
+bash skills/itsg-33-remediate/scripts/ado-create-pr.sh \
+  "<ado_org>" "<ado_project>" "<ado_repo>" \
+  "<source-branch>" "<title>" <body-file> <work-item-id>
+```
+Target branch is omitted — the script auto-detects the repo's default branch. The script's
+`az repos pr create --work-items` call links the gap work item in the same invocation; there is
+no separate linking step. **Known limitation:** this links the PR to the work item but does not
+by itself close the work item on merge — whether it auto-transitions depends on the org's own
+branch-policy/completion settings, outside this skill's scope since it only ever creates a draft
+PR. Treat this the same as local mode's manual-cleanup posture, not GitHub mode's automatic
+`Closes #N` behavior.
+
+**Local mode:** no script — there is nothing to open a PR against (handled by the no-remote
+branch above).
 
 Completion: a draft PR exists with the correct title format and every body
 field populated (no field left as a placeholder).
