@@ -26,6 +26,11 @@ if ! RAW=$(az boards query --org "$ORG" --wiql "$WIQL" -o json 2>&1); then
   exit 1
 fi
 
+# az boards query prints nothing at all (not "[]") when zero work items match.
+if [[ -z "${RAW// /}" ]]; then
+  RAW="[]"
+fi
+
 python3 -c "
 import json, sys
 d = json.loads(sys.argv[1])
