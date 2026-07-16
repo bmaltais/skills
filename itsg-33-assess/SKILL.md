@@ -128,6 +128,8 @@ this context pointer).
 
 Derive:
 - `finding`: Pass / Fail / Not Assessable
+- `severity`: P1 / P2 / P3, written only to the evidence card's `Severity` field (not part
+  of write-fragment.py's schema); Steps 6–8 read it back from there
 - `confidence`: plain-English note explaining what was found or not found
 - `risk_summary`: one-to-two sentence attacker-perspective statement (from controls.md risk context)
 - `implementation_approach`: narrative of how the system implements (or fails to implement) the control, citing specific files and config constructs
@@ -236,7 +238,8 @@ Completion: `security/assessment-state.yaml` contains an entry for every control
 ### Step 6 — Create gap issues
 
 For each **Fail** finding, create a gap issue only if no open gap already exists for
-that control.
+that control. Get `<P1|P2|P3>` for each control from its evidence card's `**Severity:**`
+line (see Step 4c) — it is not present in `security/assessment-state.yaml`.
 
 **GitHub mode** (`tracker: github`):
 ```bash
@@ -279,7 +282,9 @@ Completion: every Fail finding has a gap issue, work item, or gap file; no dupli
 ### Step 7 — Regenerate assessment report (Markdown)
 
 Write/overwrite `security/assessment-report.md` following the structure at
-[`report-template.md`](report-template.md) (load via this context pointer).
+[`report-template.md`](report-template.md) (load via this context pointer). The POA&M's
+`Severity` column comes from each Fail control's evidence card `**Severity:**` line (Step 4c),
+same source as Step 6's gap-issue tags.
 
 Completion: file written; POA&M includes one row per Fail finding; evidence cards index
 links to every file in `security/evidence/`.

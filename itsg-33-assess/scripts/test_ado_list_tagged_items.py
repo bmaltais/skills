@@ -69,6 +69,24 @@ class AdoListTaggedItemsTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(marker.exists())
 
+    def test_empty_stdout_treated_as_no_results(self):
+        # Real `az boards query -o json` prints nothing at all (not "[]") when
+        # zero work items match — the script must not crash on this.
+        self._stub_az(
+            "#!/usr/bin/env bash\n"
+            'if [[ "$1" == "extension" && "$2" == "list" ]]; then\n'
+            '  echo "azure-devops"\n'
+            "  exit 0\n"
+            "fi\n"
+            'if [[ "$1" == "boards" && "$2" == "query" ]]; then\n'
+            "  exit 0\n"
+            "fi\n"
+            "exit 1\n"
+        )
+        result = self._run(["https://dev.azure.com/acme", "MyProject", "itsg-33:gap"])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), [])
+
     def test_az_query_failure_surfaces_reason(self):
         self._stub_az(
             "#!/usr/bin/env bash\n"
