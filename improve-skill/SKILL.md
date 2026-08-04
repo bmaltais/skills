@@ -1,6 +1,6 @@
 ---
 name: improve-skill
-description: Review the current session and suggest improvements based on issues observed during the session.
+description: Use when a session showed friction — user corrections, tool failures, repeated attempts, skipped steps — and you want to patch the skill(s) responsible so it doesn't recur.
 argument-hint: "What specific areas or issues should the skill be improved in to make it more effective?"
 ---
 
@@ -11,18 +11,27 @@ Systematically optimize skills using real session signals — treating the skill
 > Inspired by SkillOpt (Microsoft): the skill document is the "weights" of a frozen agent.
 > Session outcomes are the loss signal. This skill performs one optimization step.
 
+## The artifact
+
+One optimization step produces: a small set of applied edit patches (each an `op`/`target`/`content`/`reasoning`/`support_count`) to the owning skill's `SKILL.md`, and one dated entry in that skill's `CHANGELOG.md` recording what changed and why. Derived only from signals actually observed this session — a session with no friction yields zero edits, never invented ones. An edit is acceptable only if it's generalizable (no session-specific values baked in), fixes a root cause rather than a symptom, and survives the Gate (Step 8) unchanged.
+
+## Preconditions
+
+- **The session shows real friction** — a correction, a tool failure, a repeated attempt, a skipped step. If Step 2's scan turns up none, stop and report that; do not invent edits to look productive.
+- **Each edit resolves to a real, readable skill file.** Step 7 reads the owning skill before touching it — if Step 6 can't point at an actual `SKILL.md`, that's the halt condition, not a cue to guess.
+
 ## Step 1 — Load History (Resume State)
 
 Before analyzing the session, check for existing optimization history:
 
-1. For each skill that was active in the session, check `~/.pi/agent/skills/<skill-name>/CHANGELOG.md`
+1. For each skill that was active in the session, check `CHANGELOG.md` in that skill's own directory (sibling to its `SKILL.md`)
 2. If it exists, load:
    - **Deferred edits** — items waiting for confirming signal
    - **Recent regressions** — edits that hurt previous sessions
    - **Meta notes** — strategy preferences (e.g., "prefer deletion")
    - **Step count** — to continue numbering
 
-This context feeds into the Reflect and Select stages. If no history exists, this is step 1 for that skill.
+Use this history downstream: in Step 3 (Reflect), promote a deferred edit to P0/P1 if this session gave confirming signal, and propose a revert or revision if a past edit is now a known regression; in Step 5 (Select), don't re-propose an edit already applied or explicitly rejected; in Step 8 (Gate), check the change against known regressions. If no history exists, this is step 1 for that skill.
 
 ## Step 2 — Rollout Analysis (Forward Pass)
 
@@ -100,7 +109,7 @@ For each selected edit, name the skill that governs the broken behavior.
 - A single session may exercise multiple skills — attribute each edit to its owning skill independently
 - If the session clearly points to a specific skill, use it
 - If multiple skills overlap, pick the most specific one
-- If no skill owns it, check `~/.pi/agent/skills/` for candidates
+- If no skill owns it, check your installed skills directories for candidates
 - If unclear, ask the user before proceeding
 
 Group edits by owning skill before applying — this makes Step 6 coherent per-skill.
@@ -132,7 +141,7 @@ When adding scripts: make them executable, self-documenting, and reference them 
 
 ## Step 7.5 — Quality Audit (Mandatory)
 
-Use `read` on `~/.pi/agent/skills/writing-great-skills/SKILL.md`, then audit **every changed section** against all four criteria:
+Use `read` on the `writing-great-skills` skill's `SKILL.md` (in your installed skills directory), then audit **every changed section** against all four criteria:
 
 - **No-ops** — does this line change behaviour vs. the model's default? Delete if not.
 - **Duplication** — is this meaning already present elsewhere in the skill? Collapse to one source.
@@ -145,45 +154,24 @@ Revise any section that fails. **Completion criterion: every changed section pas
 
 After editing, evaluate the change:
 
-1. Re-read the changed section of the skill file
-2. **Regression check:** Would this change break any of the session's *successes*?
-3. **Effectiveness check:** Would this change have prevented the observed failure?
-4. **Generalization check:** Does this change apply beyond this specific session?
+1. **Contract check (postcondition):** if the `skill-contracts` skill is installed, run its checker against the edited skill's directory: `python3 <path-to-skill-contracts>/scripts/check_skill.py <edited-skill-dir>`. A nonzero exit is a failing edit — fix before accepting, not after.
+2. Re-read the changed section of the skill file
+3. **Regression check:** Would this change break any of the session's *successes*?
+4. **Effectiveness check:** Would this change have prevented the observed failure?
+5. **Generalization check:** Does this change apply beyond this specific session?
 
-If all three pass → accept. If any fail → revise or reject the edit.
+Accept only if the contract check exits 0 **and** all three judgment checks pass. If any fail → revise or reject the edit.
 
 ## Step 9 — Persist History (Training Log)
 
-Maintain a per-skill changelog at `~/.pi/agent/skills/<skill-name>/CHANGELOG.md`. This is the training log — it enables longitudinal comparison across sessions.
+Maintain a per-skill changelog at `CHANGELOG.md` in that skill's own directory — the training log that enables longitudinal comparison across sessions. Formatting and step-numbering are fully mechanical, so a script owns them instead of prose: build the entry (edits applied, deferred edits, regressions, meta notes) and pipe it as JSON to the script co-located with this skill:
 
-### Format
-
-```markdown
-# <skill-name> Optimization Log
-
-## Session <date> — Step <N>
-
-### Edits Applied
-- [op: append] Added guard for X — reasoning: observed 3× tool failure
-- [op: replace] Changed rule Y — reasoning: user corrected output twice
-
-### Deferred Edits (waiting for more signal)
-- [P3] Consider adding Z — only 1 occurrence, low confidence
-
-### Observed Regressions from Previous Edits
-- (none) / Edit from step N-1 ("added mandatory check") caused slowdown in unrelated flow
-
-### Meta Notes
-- Strategy: skill was getting verbose, preferred deletion over addition this round
+```bash
+echo '{"skill_name": "<skill-name>", "edits_applied": [...], "deferred": [...], "regressions": [...], "meta_notes": [...]}' \
+  | python3 <this-skill-dir>/scripts/append_changelog.py <owning-skill-dir>
 ```
 
-### How to use history in future sessions:
-- **Before Step 3 (Reflect):** Read CHANGELOG.md to load context:
-  - Check deferred edits — did this session provide confirming signal? If yes, promote to P0/P1
-  - Check for regressions — if a previous edit is causing harm, propose a revert or revision
-  - Check meta notes — carry forward strategy preferences
-- **During Step 5 (Select):** Avoid re-proposing edits that were already applied or explicitly rejected
-- **During Step 8 (Gate):** Compare against known regressions from history
+It creates `CHANGELOG.md` if absent, computes the next Step number from existing entries, and appends the new one — you only ever supply the judgment content, never the date or step count.
 
 ### Longitudinal comparison (Slow Update):
 When history has 3+ entries for a skill, briefly assess:
@@ -201,7 +189,7 @@ After persisting the changelog, push all edited skills to remote:
 skillpack sync
 ```
 
-This ensures edits are not siloed in the local agent directory. Run after every improve-skill session, even if only one skill was changed.
+This ensures edits are not siloed in the local agent directory. Run after every improve-skill session, even if only one skill was changed. A nonzero exit means the edits are still local only — surface the error to the user instead of reporting the session complete.
 
 ## Step 10 — Meta-Skill Memory (Optional)
 
@@ -217,6 +205,5 @@ This goes into the CHANGELOG.md meta notes section — it serves as cross-sessio
 
 - **Fix the root cause, not the symptom.** If "plan.md was not updated" is the symptom, the root cause is "no step requires it" — add the step.
 - **Multiple skills may need edits.** A session can invoke several skills — analyze each skill's contribution independently and apply edits to each owning skill. Keep edits per-skill small (learning rate cap applies per skill, not globally).
-- **Quality over quantity.** If the session produced no genuine friction — no user corrections, no tool failures, no re-reads, no skipped steps — report that clearly and stop. Do not invent improvements to appear productive.
 - **Respect protected sections.** If a skill has sections marked as managed by another process, do not edit them.
 - **If the user passed a specific skill or instruction**, treat it as the Step 5 answer and skip to Step 6.
