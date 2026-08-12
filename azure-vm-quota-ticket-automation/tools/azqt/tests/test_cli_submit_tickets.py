@@ -15,6 +15,7 @@ from unittest.mock import ANY
 import pytest
 
 import azqt.cli as cli
+import azqt.submission.run as submission_run
 from azqt.azure.auth import (
     AZURE_CLIENT_CERTIFICATE_ENV,
     AZURE_CLIENT_ID_ENV,
@@ -193,7 +194,7 @@ def _configure_actual_aad(
     monkeypatch.setenv(AZURE_CLIENT_SECRET_ENV, "client-secret-that-must-not-leak")
     monkeypatch.delenv(AZURE_CLIENT_CERTIFICATE_ENV, raising=False)
     monkeypatch.setattr(
-        cli,
+        submission_run,
         "AzureAuthProvider",
         lambda: AzureAuthProvider(application_factory=lambda **_kwargs: application),
     )
@@ -240,12 +241,12 @@ def test_submit_tickets_mixed_200_poll_permanent_failure_and_contact_mismatch(
         ],
     )
     monkeypatch.setattr(
-        cli,
+        submission_run,
         "ProblemClassificationCache",
         lambda: ProblemClassificationCache(session=classifications),
     )
     monkeypatch.setattr(
-        cli,
+        submission_run,
         "TicketClient",
         lambda **kwargs: TicketClient(session=ticket_http, sleep=lambda _seconds: None, **kwargs),
     )
@@ -335,14 +336,14 @@ def test_submit_tickets_stops_after_a_mid_run_token_renewal_failure(
         puts=[FakeResponse(200, {"name": "TICKET-FIRST", "properties": {"status": "Open"}})],
         polls=[],
     )
-    monkeypatch.setattr(cli, "AzureAuthProvider", lambda: auth)
+    monkeypatch.setattr(submission_run, "AzureAuthProvider", lambda: auth)
     monkeypatch.setattr(
-        cli,
+        submission_run,
         "ProblemClassificationCache",
         lambda: ProblemClassificationCache(session=classifications),
     )
     monkeypatch.setattr(
-        cli,
+        submission_run,
         "TicketClient",
         lambda **kwargs: TicketClient(session=ticket_http, sleep=lambda _seconds: None, **kwargs),
     )
@@ -412,12 +413,12 @@ def test_submit_tickets_combines_same_subscription_requests_into_one_ticket(
         polls=[],
     )
     monkeypatch.setattr(
-        cli,
+        submission_run,
         "ProblemClassificationCache",
         lambda: ProblemClassificationCache(session=classifications),
     )
     monkeypatch.setattr(
-        cli,
+        submission_run,
         "TicketClient",
         lambda **kwargs: TicketClient(session=ticket_http, sleep=lambda _seconds: None, **kwargs),
     )
