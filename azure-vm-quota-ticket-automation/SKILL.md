@@ -5,6 +5,8 @@ description: Extract Azure VM quota requests from free text, clarify missing det
 
 # Azure VM quota ticket automation
 
+**Prerequisites:** the `uv` CLI must be installed to run the bundled `azqt` tool, and the `az` (Azure CLI) must be installed and already logged in (`az login`) as a user with rights on every candidate subscription — Step 7's live quota-headroom/capacity-restriction check runs `az` commands directly, and `submit-tickets`' `ARM_USE_CLI=true` credential path also relies on an existing `az` session.
+
 Use the bundled CLI only in this form:
 
 ```text
