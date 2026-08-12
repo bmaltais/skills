@@ -37,22 +37,9 @@ Use this history downstream: in Step 3 (Reflect), promote a deferred edit to P0/
 
 Scan the full session as a trajectory. Extract **every** observable outcome:
 
-### Failure Signals (high priority)
-| Signal | Example |
-|--------|---------|
-| User correction | "you forgot", "that's wrong", "this keeps happening" |
-| Tool failure | failed replacement, build error, test failure that required repair |
-| Wrong output | incorrect code, missed requirement, hallucinated API |
-| Repeated attempt | same operation tried 2+ times before succeeding |
-| Wasted round-trip | clarifying question that revealed an unspoken requirement |
+**Failure signals (high priority):** user correction, tool failure, wrong output (incorrect code, missed requirement, hallucinated API), repeated attempt (same operation tried 2+ times before succeeding), wasted round-trip (a clarifying question that revealed an unspoken requirement).
 
-### Success Signals (lower priority, but still valuable)
-| Signal | Example |
-|--------|---------|
-| Clean first-try execution | tool call succeeded, test passed immediately |
-| User praise | "perfect", "exactly what I needed" |
-| Efficient pattern | solved in fewer steps than expected |
-| Novel technique | approach worth encoding for reuse |
+**Success signals (lower priority, still valuable):** clean first-try execution, user praise, efficient pattern (solved in fewer steps than expected), novel technique worth encoding for reuse.
 
 List **all** signals. Don't filter yet. Note the count of each pattern (support count).
 
@@ -96,7 +83,7 @@ Rank merged edits by **impact × frequency × confidence**:
 | P2 | Single occurrence + clear cause | Apply only if trivial |
 | P3 | Speculative / low confidence | Skip — wait for more signal |
 
-**Learning rate cap:** Apply at most **4 edits** per session. This prevents overshooting — too many changes at once makes it impossible to attribute future improvements or regressions to specific edits.
+**Learning rate cap:** Apply at most **4 edits** per session, per owning skill — a session touching 3 skills may apply up to 4 edits to each, not 4 total. This prevents overshooting — too many changes at once makes it impossible to attribute future improvements or regressions to specific edits.
 
 If you have more than 4 worthy edits, select the top 4 by priority. Note the deferred ones for future sessions.
 
@@ -112,7 +99,7 @@ For each selected edit, name the skill that governs the broken behavior.
 - If no skill owns it, check your installed skills directories for candidates
 - If unclear, ask the user before proceeding
 
-Group edits by owning skill before applying — this makes Step 6 coherent per-skill.
+Group edits by owning skill before applying — this makes Step 7 coherent per-skill.
 
 ## Step 7 — Update (Apply Patches)
 
@@ -126,7 +113,7 @@ Read the owning skill file before editing it. Apply the minimum change that addr
 
 ### Edit principles (from SkillOpt):
 - Edits must be **generalizable** — do not hardcode session-specific values
-- Only patch **gaps** in the skill — do not duplicate existing content
+- Only patch **gaps** in the skill
 - Prefer **reinforcing existing sections** over adding new top-level sections
 - Keep edits **concise** — one clear rule per edit, not paragraphs
 
@@ -204,6 +191,6 @@ This goes into the CHANGELOG.md meta notes section — it serves as cross-sessio
 ## Guardrails
 
 - **Fix the root cause, not the symptom.** If "plan.md was not updated" is the symptom, the root cause is "no step requires it" — add the step.
-- **Multiple skills may need edits.** A session can invoke several skills — analyze each skill's contribution independently and apply edits to each owning skill. Keep edits per-skill small (learning rate cap applies per skill, not globally).
+- **Multiple skills may need edits, each capped independently** — see Steps 5-6.
 - **Respect protected sections.** If a skill has sections marked as managed by another process, do not edit them.
 - **If the user passed a specific skill or instruction**, treat it as the Step 5 answer and skip to Step 6.

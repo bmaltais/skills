@@ -111,3 +111,21 @@
 - Session had no improve-skill-specific failures. All 4 edits went to azure-devops-work-item-comment.
 - Deferred-edit from Step 2 (Step 9 "How to use history" subsection duplication) still unconfirmed — no friction observed.
 - Convergence: improve-skill itself appears stable. Target was a different skill.
+
+## Session 2026-08-11 — Step 4
+
+### Edits Applied
+- [op: replace] Step 2 Failure/Success Signal tables (2 markdown tables, 9 rows, 18 lines with illustrative example phrases) compressed into two compact prose lines listing just the signal taxonomy — reasoning: skill-contracts review (check_skill.py) flagged sprawl (205 body lines, over the 150 threshold); the per-signal example quotes ("you forgot", "that's wrong") were no-ops (the model already recognizes what a user correction sounds like without a literal quoted example), while the category names are the load-bearing taxonomy and were preserved verbatim. Support: skill-contracts mechanical check.
+- [op: replace] Step 7 'Only patch gaps in the skill — do not duplicate existing content' bullet — dropped the trailing negation clause; it restated the same meaning as the leading positive clause with no new information. Support: writing-great-skills no-op test (self-applied per Step 7.5).
+- [op: replace] Step 6 'Group edits by owning skill before applying — this makes Step 6 coherent per-skill' — fixed a stale self-reference bug: grouping happens IN Step 6 to prepare for applying in Step 7, so the sentence should (and now does) say 'makes Step 7 coherent per-skill'.
+- [op: replace] Step 5's Learning rate cap + Guardrails 'Multiple skills may need edits' bullet — the 'cap applies per-skill, not globally' clarification lived only in Guardrails (read once, at the end, easy to miss when actually executing Step 5), while Step 5 itself just said 'at most 4 edits per session' with no scope qualifier — genuine ambiguity, not just duplication. Moved the clarification into Step 5's own Learning rate cap sentence (co-location: the caveat belongs with the rule it qualifies) and trimmed the now-redundant Guardrails bullet to a one-line pointer back to Steps 5-6.
+
+### Deferred Edits (waiting for more signal)
+- [P2] Sprawl warning is reduced (205 -> 192 body lines) but not eliminated (still over the 150 threshold). Remaining length is a legitimately dense 10-step linear sequence (Steps 1-10 plus 7.5/9.5) with no branches to disclose behind a pointer and no evidence of premature completion to justify a sequence split (the one prior failure needing a split, Step 7.5, was about a buried/skippable subsection, not lookahead-induced rushing, and was already fixed by promoting it to a first-class step). Revisit only if a future session shows the length itself causing a miss.
+
+### Observed Regressions from Previous Edits
+- (none) — this is the first skill-contracts-driven review of improve-skill; no prior edit from this angle to regress.
+
+### Meta Notes
+- First review driven by an external contract (skill-contracts) rather than an observed in-session failure, mirroring the same review just done on eslz-module-upgrade in the same session. The mechanical check caught one thing (sprawl); the rest came from applying the contract's own vocabulary (single source of truth, co-location, no-op) by hand, which also surfaced one genuine bug (Step 6's stale self-reference) unrelated to either contract or friction signals — worth remembering that a contract review is also just a good occasion for a plain proofread.
+- Convergence: this skill was already well-aligned with skill-contracts before this review (it already has 'The artifact', 'Preconditions', and a strong Step 8 Gate with a command-based postcondition) — unsurprising since both skills share an author/lineage. Diminishing returns expected on future contract-driven passes; friction-driven passes (the skill's own normal mode) remain the primary lever.
