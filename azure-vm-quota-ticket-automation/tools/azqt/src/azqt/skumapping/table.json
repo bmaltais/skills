@@ -1,0 +1,69 @@
+{
+  "_comment": "Static VM SKU name to Azure compute quota family mapping table for azqt (Req 2.1, 2.2, 2.5). Entries supply formal SKU names plus vCPU and memory GiB values. The Dsv3/Dsv4/Dsv5/Dav6/Dsv6/DADSv6 and Esv3/Esv5/Eav6/Esv6/EADSv6 tiers deliberately share dimensions across generations and CPU vendors, so informal sizes can resolve ambiguously rather than guessing a quota family. Family names are the exact values returned by Microsoft.Compute's resourceSkus/usages APIs (verified against a live subscription), not the SKU name's own casing -- notably the AMD 'as' D/E-series v6 families drop the 's' (standardDav6Family/standardEav6Family), unlike the v7 generation's standardDasv7Family/standardEasv7Family.",
+  "entries": [
+    { "sku_name": "Standard_D1", "quota_family": "standardDFamily", "vcpu": 1, "memory_gib": 3.5 },
+    { "sku_name": "Standard_D2", "quota_family": "standardDFamily", "vcpu": 2, "memory_gib": 7 },
+    { "sku_name": "Standard_D3", "quota_family": "standardDFamily", "vcpu": 4, "memory_gib": 14 },
+    { "sku_name": "Standard_D4", "quota_family": "standardDFamily", "vcpu": 8, "memory_gib": 28 },
+
+    { "sku_name": "Standard_D2s_v3", "quota_family": "standardDSv3Family", "vcpu": 2, "memory_gib": 8 },
+    { "sku_name": "Standard_D4s_v3", "quota_family": "standardDSv3Family", "vcpu": 4, "memory_gib": 16 },
+    { "sku_name": "Standard_D8s_v3", "quota_family": "standardDSv3Family", "vcpu": 8, "memory_gib": 32 },
+    { "sku_name": "Standard_D16s_v3", "quota_family": "standardDSv3Family", "vcpu": 16, "memory_gib": 64 },
+
+    { "sku_name": "Standard_D2s_v4", "quota_family": "standardDSv4Family", "vcpu": 2, "memory_gib": 8 },
+    { "sku_name": "Standard_D4s_v4", "quota_family": "standardDSv4Family", "vcpu": 4, "memory_gib": 16 },
+    { "sku_name": "Standard_D8s_v4", "quota_family": "standardDSv4Family", "vcpu": 8, "memory_gib": 32 },
+    { "sku_name": "Standard_D16s_v4", "quota_family": "standardDSv4Family", "vcpu": 16, "memory_gib": 64 },
+
+    { "sku_name": "Standard_D2s_v5", "quota_family": "standardDSv5Family", "vcpu": 2, "memory_gib": 8 },
+    { "sku_name": "Standard_D4s_v5", "quota_family": "standardDSv5Family", "vcpu": 4, "memory_gib": 16 },
+    { "sku_name": "Standard_D8s_v5", "quota_family": "standardDSv5Family", "vcpu": 8, "memory_gib": 32 },
+    { "sku_name": "Standard_D16s_v5", "quota_family": "standardDSv5Family", "vcpu": 16, "memory_gib": 64 },
+
+    { "sku_name": "Standard_E2", "quota_family": "standardEFamily", "vcpu": 2, "memory_gib": 14 },
+    { "sku_name": "Standard_E4", "quota_family": "standardEFamily", "vcpu": 4, "memory_gib": 28 },
+    { "sku_name": "Standard_E8", "quota_family": "standardEFamily", "vcpu": 8, "memory_gib": 56 },
+    { "sku_name": "Standard_E16", "quota_family": "standardEFamily", "vcpu": 16, "memory_gib": 112 },
+
+    { "sku_name": "Standard_E2s_v3", "quota_family": "standardESv3Family", "vcpu": 2, "memory_gib": 16 },
+    { "sku_name": "Standard_E4s_v3", "quota_family": "standardESv3Family", "vcpu": 4, "memory_gib": 32 },
+    { "sku_name": "Standard_E8s_v3", "quota_family": "standardESv3Family", "vcpu": 8, "memory_gib": 64 },
+    { "sku_name": "Standard_E16s_v3", "quota_family": "standardESv3Family", "vcpu": 16, "memory_gib": 128 },
+
+    { "sku_name": "Standard_E2s_v5", "quota_family": "standardESv5Family", "vcpu": 2, "memory_gib": 16 },
+    { "sku_name": "Standard_E4s_v5", "quota_family": "standardESv5Family", "vcpu": 4, "memory_gib": 32 },
+    { "sku_name": "Standard_E8s_v5", "quota_family": "standardESv5Family", "vcpu": 8, "memory_gib": 64 },
+    { "sku_name": "Standard_E16s_v5", "quota_family": "standardESv5Family", "vcpu": 16, "memory_gib": 128 },
+
+    { "sku_name": "Standard_D2as_v6", "quota_family": "standardDav6Family", "vcpu": 2, "memory_gib": 8 },
+    { "sku_name": "Standard_D4as_v6", "quota_family": "standardDav6Family", "vcpu": 4, "memory_gib": 16 },
+    { "sku_name": "Standard_D8as_v6", "quota_family": "standardDav6Family", "vcpu": 8, "memory_gib": 32 },
+    { "sku_name": "Standard_D16as_v6", "quota_family": "standardDav6Family", "vcpu": 16, "memory_gib": 64 },
+
+    { "sku_name": "Standard_E2as_v6", "quota_family": "standardEav6Family", "vcpu": 2, "memory_gib": 16 },
+    { "sku_name": "Standard_E4as_v6", "quota_family": "standardEav6Family", "vcpu": 4, "memory_gib": 32 },
+    { "sku_name": "Standard_E8as_v6", "quota_family": "standardEav6Family", "vcpu": 8, "memory_gib": 64 },
+    { "sku_name": "Standard_E16as_v6", "quota_family": "standardEav6Family", "vcpu": 16, "memory_gib": 128 },
+
+    { "sku_name": "Standard_D2s_v6", "quota_family": "standardDSv6Family", "vcpu": 2, "memory_gib": 8 },
+    { "sku_name": "Standard_D4s_v6", "quota_family": "standardDSv6Family", "vcpu": 4, "memory_gib": 16 },
+    { "sku_name": "Standard_D8s_v6", "quota_family": "standardDSv6Family", "vcpu": 8, "memory_gib": 32 },
+    { "sku_name": "Standard_D16s_v6", "quota_family": "standardDSv6Family", "vcpu": 16, "memory_gib": 64 },
+
+    { "sku_name": "Standard_D2ads_v6", "quota_family": "standardDADSv6Family", "vcpu": 2, "memory_gib": 8 },
+    { "sku_name": "Standard_D4ads_v6", "quota_family": "standardDADSv6Family", "vcpu": 4, "memory_gib": 16 },
+    { "sku_name": "Standard_D8ads_v6", "quota_family": "standardDADSv6Family", "vcpu": 8, "memory_gib": 32 },
+    { "sku_name": "Standard_D16ads_v6", "quota_family": "standardDADSv6Family", "vcpu": 16, "memory_gib": 64 },
+
+    { "sku_name": "Standard_E2s_v6", "quota_family": "standardESv6Family", "vcpu": 2, "memory_gib": 16 },
+    { "sku_name": "Standard_E4s_v6", "quota_family": "standardESv6Family", "vcpu": 4, "memory_gib": 32 },
+    { "sku_name": "Standard_E8s_v6", "quota_family": "standardESv6Family", "vcpu": 8, "memory_gib": 64 },
+    { "sku_name": "Standard_E16s_v6", "quota_family": "standardESv6Family", "vcpu": 16, "memory_gib": 128 },
+
+    { "sku_name": "Standard_E2ads_v6", "quota_family": "standardEADSv6Family", "vcpu": 2, "memory_gib": 16 },
+    { "sku_name": "Standard_E4ads_v6", "quota_family": "standardEADSv6Family", "vcpu": 4, "memory_gib": 32 },
+    { "sku_name": "Standard_E8ads_v6", "quota_family": "standardEADSv6Family", "vcpu": 8, "memory_gib": 64 },
+    { "sku_name": "Standard_E16ads_v6", "quota_family": "standardEADSv6Family", "vcpu": 16, "memory_gib": 128 }
+  ]
+}
