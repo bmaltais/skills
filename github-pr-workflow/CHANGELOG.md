@@ -196,3 +196,17 @@
 
 ### Meta Notes
 - Convergence note (11th entry): CLI-mechanics content for this skill has been stable across many sessions now (zero regressions this round on any previously-applied fix). This session's one finding is a cross-reference gap between two individually-correct sections rather than a wrong command — consistent with this skill's established pattern (per Step 10's note) that remaining friction is workflow sequencing/discoverability, not command reliability.
+
+## Session 2026-08-18 — Step 12
+
+### Edits Applied
+- [op: insert_after] `SKILL.md` § "3. Pushing and Creating a PR" → "Create the PR" — added a check: `gh release list` + `ls .github/workflows/` to detect a repo with release history but no release-creating workflow (grep for `release create`/`softprops/action-gh-release`), flag to the user that releases are manual before assuming CI tags on merge, plus the backfill recipe (`gh release create <version> --notes-file <path> --target <base-branch>` + follow-up workflow PR) if only discovered post-merge — reasoning: this session merged a PR into a Terraform CAF module repo (`terraform-azurerm-caf-subnet`) via this skill's create-PR flow; the user later asked why no GitHub release was auto-created after merge. Investigation found the repo has release history (`v3.3.0` etc.) but zero release-producing CI (only PR-triggered fmt/test/docs workflows) — all prior tags were created manually. This skill's PR-creation flow had no step that surfaces that gap, so the missing automation was discovered only after merge instead of being flagged proactively.
+
+### Deferred Edits (waiting for more signal)
+- (none)
+
+### Observed Regressions from Previous Edits
+- (none)
+
+### Meta Notes
+- This session never reached this skill's own "6. Merging" section (the PR was merged externally, outside this session) — placing the check at PR-creation time (Section 3) instead of merge time (Section 6) means it fires regardless of who/what performs the actual merge.

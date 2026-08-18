@@ -133,6 +133,8 @@ For the `--body-file` content itself, start from [`templates/pr-body-feature.md`
 
 Without `gh`: see [`references/git-curl-fallback.md`](references/git-curl-fallback.md) § Section 3 for the curl equivalent.
 
+**Check whether merging will actually produce a release.** `gh release list --limit 3` and `ls .github/workflows/` — if the repo has release history but no workflow file that creates one (grep for `release create`, `softprops/action-gh-release`, or similar), releases are made manually; don't assume CI will tag on merge. Flag this in the PR body or to the user so a release isn't silently expected and missed. If discovered only after merge, backfill with `gh release create <version> --notes-file <path> --target <base-branch>` and add the missing workflow in a follow-up PR.
+
 ### Reading a Reviewer's Feedback
 
 **A reviewer's own fix commit plus its own test asserting that fix is not independent verification.** Before building further work on top of it, check any factual claim the review makes about an external system (an API constraint, a provider default, a library behavior) against a primary source — the test only proves the fix is internally consistent with the reviewer's assumption, not that the assumption is correct.
