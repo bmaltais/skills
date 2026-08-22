@@ -129,3 +129,20 @@
 ### Meta Notes
 - First review driven by an external contract (skill-contracts) rather than an observed in-session failure, mirroring the same review just done on eslz-module-upgrade in the same session. The mechanical check caught one thing (sprawl); the rest came from applying the contract's own vocabulary (single source of truth, co-location, no-op) by hand, which also surfaced one genuine bug (Step 6's stale self-reference) unrelated to either contract or friction signals — worth remembering that a contract review is also just a good occasion for a plain proofread.
 - Convergence: this skill was already well-aligned with skill-contracts before this review (it already has 'The artifact', 'Preconditions', and a strong Step 8 Gate with a command-based postcondition) — unsurprising since both skills share an author/lineage. Diminishing returns expected on future contract-driven passes; friction-driven passes (the skill's own normal mode) remain the primary lever.
+
+## Session 2026-08-22 — Step 5
+
+### Edits Applied
+- [op: replace, Step 7 supporting artifacts] Made script-conversion mandatory: before leaving a step as prose, check if it is fully determined (fixed command sequence, file transform, formatting pass); if so, ship it as a script per skill-contracts 'Prefer the script'. Reasoning: explicit user instruction to always transform mechanizable steps into scripts for speed/accuracy. Support count: 1 explicit instruction.
+- [op: append] Added scripts/run_python.sh: any Python script this skill authors (its own or one it adds to a target skill) now runs via uv with a venv scoped to the owning skill's own folder, installing uv locally under that folder only if no system-wide uv is found. Reasoning: explicit user instruction that Python execution must never mutate the system, and must self-provision uv if missing. Support count: 1 explicit instruction.
+- [op: replace, Step 9] Changed the append_changelog.py invocation from bare python3 to the new run_python.sh wrapper, so the skill's own script follows the same uv/venv convention it now mandates for others.
+
+### Deferred Edits (waiting for more signal)
+- [P2] Sprawl warning persists (192 body lines, over the 150 threshold) — same deferred item as prior sessions; no evidence yet that length itself causes a miss.
+
+### Observed Regressions from Previous Edits
+- (none observed)
+
+### Meta Notes
+- This session added a new cross-cutting policy (script conversion + uv/venv isolation) rather than reacting to an in-session friction signal — driven directly by explicit user instruction, same category as the Step 1 (skillpack sync) and Step 2 (writing-great-skills audit) sessions.
+- Convergence: policy-driven edits keep landing cleanly on top of the existing structure (Step 7 and Step 9 were both single-point insertions), suggesting the skill's step boundaries are stable and well-scoped.

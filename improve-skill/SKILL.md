@@ -119,12 +119,12 @@ Read the owning skill file before editing it. Apply the minimum change that addr
 
 ### Beyond SKILL.md — supporting artifacts
 
-When a skill involves multi-step workflows, also consider:
+Before leaving any step as prose, check whether it's fully determined — a fixed command sequence, a file transform, a formatting pass. Mandatory when it is: ship it as a script in that skill's `scripts/` subdirectory and have the skill invoke it, per skill-contracts' "Prefer the script" — a script runs the same way every time; prose gets re-interpreted. Reserve prose for the parts that genuinely need judgment.
 
 - **Helper scripts** (`scripts/` subdirectory) — when steps are repeated, error-prone, or need cleanup
 - **Reference files** — when the skill relies on external API specifics or repeated lookups
 
-When adding scripts: make them executable, self-documenting, and reference them from the skill.
+Make new scripts executable, self-documenting, and referenced from the skill. Run a Python script through `<owning-skill-dir>/scripts/run_python.sh <owning-skill-dir> <script.py> [args]` (copy `run_python.sh` from this skill's own `scripts/` into the owning skill if it doesn't have one yet) — it provisions `uv` and a venv scoped to that skill's own folder, so execution touches no system Python and no system-wide `uv` install.
 
 ## Step 7.5 — Quality Audit (Mandatory)
 
@@ -155,7 +155,7 @@ Maintain a per-skill changelog at `CHANGELOG.md` in that skill's own directory �
 
 ```bash
 echo '{"skill_name": "<skill-name>", "edits_applied": [...], "deferred": [...], "regressions": [...], "meta_notes": [...]}' \
-  | python3 <this-skill-dir>/scripts/append_changelog.py <owning-skill-dir>
+  | <this-skill-dir>/scripts/run_python.sh <this-skill-dir> <this-skill-dir>/scripts/append_changelog.py <owning-skill-dir>
 ```
 
 It creates `CHANGELOG.md` if absent, computes the next Step number from existing entries, and appends the new one — you only ever supply the judgment content, never the date or step count.
