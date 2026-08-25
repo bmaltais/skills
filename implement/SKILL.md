@@ -12,4 +12,4 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 Once done, use /code-review to review the work.
 
-Commit your work to the current branch, then open a PR using /github-pr-workflow.
+Commit your work to the current branch.
