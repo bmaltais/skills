@@ -1,5 +1,28 @@
 # address-and-merge Optimization Log
 
+## Session 2026-08-01 — Contract pass
+
+### Edits Applied
+- Added a Product statement (what a run hands back) and Phase 0 preconditions
+  (`gh auth status`, clean worktree — a dirty tree silently rode along into the
+  Phase 5 commit).
+- Phase 2 now fetches inline threads via GraphQL `reviewThreads` and filters
+  `isResolved`. The old REST `/pulls/{N}/comments` endpoint carries no resolved
+  flag, so already-handled threads were re-addressed.
+- Phase 3 gained a checkable completion criterion: every fetched item marked
+  fixed or declined.
+- Phase 4 detects the project's build command instead of leading with Go.
+- Phases 6+7 collapsed into `gh pr merge --squash --delete-branch`, with a
+  four-command postcondition block (state MERGED, on base, both branches gone).
+- Deleted "Key Invariants" (5 of 6 bullets duplicated phase text, 3 flagged as
+  negation) and the "Common fix categories" table (no-op — the model already
+  knows how to replace a magic literal).
+- Trimmed the description: dropped the tail restating the body.
+
+### Meta Notes
+- `check_skill.py` clean (was: sprawl at 174 lines + 3 negation warnings).
+- The GraphQL query is unrun — first real invocation should confirm it.
+
 ## Session 2026-06-05 — Step 4
 
 ### Edits Applied

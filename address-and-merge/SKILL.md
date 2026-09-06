@@ -1,177 +1,150 @@
 ---
 name: address-and-merge
-description: Address all review feedback on an open PR, merge it, and clean up the branch. Use when the user says "address the feedback on PR N", "fix the review comments", "merge PR N", "address and merge", or "clean up after merging". Handles inline (line-level) and conversation-level review comments, runs the build/test suite, commits the fixes, pushes, squash-merges the PR, deletes the remote branch, deletes the local branch, and returns to main.
+description: Address the review feedback on an open PR, then squash-merge it and delete the branch. Use when the user says "address the feedback on PR N", "fix the review comments", "merge PR N", or "address and merge".
 ---
 
 # Address and Merge
 
-A complete end-to-end workflow that takes an open PR from "has review comments"
-to "merged and cleaned up". Handles both automated (Copilot) inline comments and
-human conversation comments, verifies the build, and leaves the repo on a clean
-main branch.
+**Product:** a merged PR and a clean repo. Concretely — every unresolved review
+thread on the PR ends in either a code change or a stated reason it needs none;
+those changes land as one commit; the PR is squash-merged; both branches are
+gone and the repo sits on an up-to-date default branch.
 
-## Invocation
+Derived from the PR's review threads. No threads fetched, no work to do — the
+run halts rather than guessing what "the feedback" meant.
 
 ```
-/address-and-merge          — detect the current branch's open PR automatically
+/address-and-merge          — detect the current branch's open PR
 /address-and-merge #N       — go straight to PR N
 ```
 
+## Phase 0 — Preconditions
+
+```bash
+gh auth status
+git status --porcelain     # must be empty
+```
+
+Uncommitted work is the dangerous one: Phase 5 commits everything the fixes
+touch, and pre-existing edits ride along invisibly. Stop and tell the user;
+let them stash or commit.
+
 ## Phase 1 — Identify the PR
 
-If a PR number was given, use it directly.
-
-If no number was given, detect the PR for the current branch:
-
 ```bash
-gh pr view --json number,title,headRefName,state
+gh pr view [N] --json number,state,headRefName,baseRefName
 ```
 
-If the branch has no associated PR, or the PR is already merged/closed, stop and
-tell the user.
-
-Make sure the local branch is checked out and up to date:
+With no `N`, this resolves the current branch's PR. Halt if there is no PR, or
+if `state` is not `OPEN`.
 
 ```bash
-git checkout <branch>
-git pull
+git checkout <headRefName> && git pull
 ```
 
-## Phase 2 — Fetch All Review Comments
+## Phase 2 — Fetch unresolved feedback
 
-Fetch **both** comment types — they come from different API endpoints.
+Two endpoints, two comment types. `gh pr view --comments` returns only
+conversation-level comments — inline review comments (where automated reviewers
+like Copilot live) come from the API, and only GraphQL carries the resolved
+flag, so already-handled threads can be skipped.
 
 ```bash
-# 1. Inline review comments (line-level — Copilot automated review lives here)
-gh api repos/{owner}/{repo}/pulls/{N}/comments \
-  --jq '.[] | {id: .id, path: .path, line: .line, body: .body}'
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 
-# 2. Conversation-level comments (general PR discussion)
-gh pr view {N} --comments --json comments \
-  --jq '.comments[] | {author: .author.login, body: .body}'
+# 1. Inline review threads, unresolved only
+gh api graphql -f query='
+query($owner:String!,$name:String!,$pr:Int!){
+  repository(owner:$owner,name:$name){ pullRequest(number:$pr){
+    reviewThreads(first:100){ nodes{
+      isResolved
+      comments(first:1){ nodes{ path line body author{login} } } } } } } }' \
+  -F owner=${REPO%/*} -F name=${REPO#*/} -F pr=<N> \
+  --jq '.data.repository.pullRequest.reviewThreads.nodes[]
+        | select(.isResolved | not) | .comments.nodes[0]'
+
+# 2. Conversation-level comments
+gh pr view <N> --json comments --jq '.comments[] | {author: .author.login, body: .body}'
 ```
 
-> **Important:** `gh pr view --comments` does NOT return inline review comments.
-> They are two separate endpoints. Always fetch both.
+Write the resulting list down before editing anything — it is the checklist
+Phase 3 closes against. Nothing unresolved in either stream: skip to Phase 6.
 
-If there are no unresolved comments of either type, skip to Phase 4 (merge).
+## Phase 3 — Address each item
 
-## Phase 3 — Address Each Comment
+For each item on the checklist:
 
-Work through comments one at a time:
+1. **Locate** — `path` + `line` for inline threads; grep the named symbol for
+   conversation comments.
+2. **Read the surrounding code** before editing. Ambiguous comment: take the
+   most reasonable reading and record it in the commit message.
+3. **Apply the fix** with the edit tool, so the change is reviewable as a diff.
 
-1. **Locate the code** — use `path` + `line` from inline comments, or search the
-   codebase for the relevant symbol/pattern from conversation comments.
+Some comments are wrong, or already handled by other code. Those close with a
+written reason, not a change — but they still close explicitly.
 
-2. **Understand the fix** — read the surrounding context before editing. If the
-   comment is ambiguous, make the most reasonable interpretation and note it in
-   the commit message.
-
-3. **Apply the fix** — edit the file directly using the edit tool. Never use
-   `sed`, `awk`, or bash string manipulation to modify source code.
-
-4. **Repeat** for all comments before running the build.
-
-### Common fix categories
-
-| Comment type | Typical fix |
-|---|---|
-| Magic literal → named constant | Replace literal with existing constant in same package |
-| Missing counter increment | Add `counter++` in the matching error/success branch |
-| Doc comment inaccuracy | Rewrite the doc comment to match actual behaviour |
-| Unused import / wrong import | Swap or remove the import |
-| Error silently swallowed | Add error logging or propagation |
+**Completion criterion:** every item on the Phase 2 checklist is marked either
+*fixed* (with the file it touched) or *declined* (with the reason). A tally that
+is short of the fetched list means Phase 3 is not done.
 
 ## Phase 4 — Verify
 
-After all fixes are applied:
+Find the project's canonical commands first — `Makefile`, `AGENTS.md`,
+`CLAUDE.md`, `README.md`, or the `scripts` block of `package.json`. Use those.
+Absent any of them, fall back to the language default (Go:
+`go build ./... && go test ./... && go vet ./...`; Node: `npm test`; Python:
+`pytest`).
 
-```bash
-go build ./...
-go test ./...
-go vet ./...
-```
+**Postcondition:** the chosen command exits 0. A failure is fixed, never
+suppressed or skipped.
 
-(Substitute the project's actual build/test commands if different — check
-`Makefile`, `AGENTS.md`, or `README.md` for the canonical commands.)
+## Phase 5 — Commit and push
 
-Fix any errors before proceeding. Do not suppress or ignore failures.
-
-## Phase 5 — Commit and Push
+One commit for all review fixes, naming the PR and summarising what changed:
 
 ```bash
 git add <changed files>
-git commit -m "fix: address PR #N review feedback (<brief summary of fixes>)"
+git commit -m "fix: address PR #70 review feedback (NoOptDefVal constant, errCount on merge error)"
 git push
 ```
 
-Use a single commit for all review fixes. The commit message should name the PR
-number and give a short parenthetical summary of what was fixed, e.g.:
+Push as a new commit on top of the reviewed history, so reviewers can diff what
+changed since their review.
 
-```
-fix: address PR #70 review feedback (NoOptDefVal constant, errCount on merge error)
-```
-
-## Phase 6 — Merge
-
-Squash-merge the PR so the feature lands as a single commit on main:
+## Phase 6 — Merge and clean up
 
 ```bash
-gh pr merge {N} --squash
+gh pr merge <N> --squash --delete-branch
 ```
 
-If the command fails with "Pull Request is not mergeable", check the actual merge state:
+Squash keeps the default branch linear; `--delete-branch` removes the remote
+branch and switches back before deleting the local one.
+
+"Pull Request is not mergeable" right after a push is usually GitHub's API
+lagging. Check, then retry once:
 
 ```bash
-gh pr view {N} --json mergeStateStatus,mergeable,state
+gh pr view <N> --json mergeable,mergeStateStatus,state
+sleep 5 && gh pr merge <N> --squash --delete-branch
 ```
 
-If `mergeable` is `MERGEABLE` and `mergeStateStatus` is `CLEAN`, GitHub's API
-had a transient inconsistency after the push. Wait 3–5 seconds and retry:
+If the local branch survives, delete it with `git branch -D <branch>` — after a
+squash the branch tip is not an ancestor of main, so `-d` refuses and `-D` is
+the safe correct call.
+
+**Postcondition** — all four must hold:
 
 ```bash
-sleep 5 && gh pr merge {N} --squash
+gh pr view <N> --json state --jq '.state'      # MERGED
+git rev-parse --abbrev-ref HEAD                # the base branch
+git branch --list <branch>                     # empty
+git ls-remote --heads origin <branch>          # empty
 ```
 
-Wait for the merge to complete before proceeding.
-
-## Phase 7 — Clean Up
-
-Delete the remote branch, then the local branch, then return to main:
-
-```bash
-# Delete remote branch
-git push origin --delete <branch>
-
-# Return to main and pull
-git checkout main
-git pull
-
-# Delete local branch (use -D because squash merge means git won't see it as
-# fully merged via the standard ancestor check)
-git branch -D <branch>
-```
-
-> **Note on `-D` vs `-d`:** After a squash merge, the local branch tip is not an
-> ancestor of main (the squash commit has a different SHA). Use `-D` to force-
-> delete. This is safe — the code is on main.
-
-## Phase 8 — Report
-
-Confirm to the user:
+## Phase 7 — Report
 
 ```
-PR #N merged ✓
+PR #N merged ✓  (<count> comments addressed, <count> declined)
 Branch <branch> deleted (remote + local) ✓
-Now on main @ <short SHA>
+Now on <base> @ <short SHA>
 ```
-
-## Key Invariants
-
-- NEVER force-push over an existing review — always add a new commit
-- NEVER merge before the build and tests pass
-- NEVER leave the remote branch alive after a successful merge
-- ALWAYS use `--squash` for merge to keep main history linear
-- ALWAYS use `-D` (not `-d`) to delete the local branch after a squash merge
-- ALWAYS fetch both inline (`gh api .../pulls/{N}/comments`) and conversation
-  (`gh pr view {N} --comments`) comment types — they are different endpoints
