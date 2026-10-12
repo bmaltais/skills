@@ -21,8 +21,9 @@ The user has asked for a **retrospective**. You are suggesting improvements to t
 - **Tool economy**: did the agent make expensive tool calls that could be streamlined? Is there any custom tooling (CLI's, MCP's) that is particularly token-inefficient? _Use when_ the agent made an expensive tool call.
 - **No-ops**: look for instructions in steering files that don't modify the agent's behavior. _Use when_ the steering files are large and unwieldy.
 - **Information access**: look for opportunities to increase the agent's access to information. Teeing dev server logs, readonly access to third-party services. _Use when_ a crucial piece of information was not available to the agent.
+- **Custom CLI tools**: did the agent repeat the same multi-step command sequence, hand-parse the same output, or write the same throwaway script more than once? Could one **custom CLI** with compact output replace it? _Use when_ the session shows a repeated pipeline of 3+ commands, an inline one-off script, or a parsing step that burned tokens on noisy output.
 
-4. Present these candidates to the user, in order of severity.
+4. Present these candidates to the user, in order of severity. For each **custom CLI** candidate, give the name, the commands it would replace (quoted from the session), and its proposed usage and output. Build it only after the user approves, following [Custom CLI tools](#custom-cli-tools).
 
 ## Reference
 
@@ -42,3 +43,18 @@ You have access to several files in the repo:
 - `CODING_STANDARDS.md`: this file is read during review, not implementation. Add **navigation pointers** to docs folders if the standards file gets more than 1,000 lines long.
 - Docs: use docs as references files, pointed to by other files. Look for existing docs before writing new ones.
 - Skills: use skills for docs (since their description goes into the agent's context window), or for user-invoked commands. Follow the advice in the `writing-for-agents` skill.
+
+### Custom CLI tools
+
+Build in **Rust**: fast startup, one static binary, no runtime to install, and no shell-quoting or injection hazards from untrusted input. Use `std` plus at most `clap` and `serde_json`. Run external programs with `std::process::Command` and an argument list, never through `sh -c`.
+
+Use **bash** only when the whole tool is a few lines gluing existing commands, with no parsing, no loops over untrusted input, and no state. Start with `set -euo pipefail` and quote every expansion. If it grows past that, rewrite it in Rust.
+
+Design for the agent as the caller:
+
+- Output is compact and greppable: one record per line, no colour, no progress bars. Print only what the agent needs to decide the next step.
+- Exit non-zero on failure with the cause on stderr.
+- Default to read-only. Anything that writes, deletes, or reaches the network needs an explicit flag.
+- `--help` is the documentation. Keep it short.
+
+Put the tool where the repo already keeps its tooling (a `tools/` directory), or `~/.local/bin` for a tool that isn't specific to one repo. Add a **navigation pointer** to it in `AGENTS.md`, with one line naming when to use it.
