@@ -13,7 +13,7 @@ set -euo pipefail
 LIMIT="${FILE_SIZE_GUARD_LIMIT:-5000}"
 cd "$(git rev-parse --show-toplevel)"
 
-SOURCE_EXT='ts|tsx|js|jsx|mjs|cjs|vue|svelte|astro|py|rb|go|rs|java|kt|kts|swift|c|h|cc|cpp|hpp|cs|php|scala|ex|exs|lua|sh|bash|zsh|dart|zig'
+SOURCE_EXT='ts|tsx|js|jsx|mjs|cjs|vue|svelte|astro|py|rb|go|rs|java|kt|kts|swift|c|h|cc|cpp|hpp|cs|php|scala|ex|exs|lua|sh|bash|zsh|dart|zig|qml'
 
 # Paths that are not agent-authored: deps, build output, codegen, lockfiles, tests.
 DEFAULT_IGNORE=(
@@ -67,11 +67,11 @@ done < <(list)
   cat <<MSG
 
 Split each file before committing:
-  1. Name the responsibilities in the file. Move each cohesive one into its own file,
-     named for what it does.
+  1. Start with a leaf: a cluster of functions nothing else in the file calls. Move it
+     to its own file, named for what it does.
   2. If types/interfaces/constants dominate the size, move them to a sibling types file.
   3. If the file mixes concerns across its public API, split along that surface and
-     re-export from the original path so callers keep working.
+     re-export from the original path, or update the callers.
   4. Keep the new files focused; a grab-bag like utils2 just moves the problem.
 
 Then re-stage the new files and commit again.

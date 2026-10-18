@@ -15,7 +15,9 @@ A deterministic cap on source file size, enforced by the commit hook. An `AGENTS
 
 Find what the repo already uses: Husky (`.husky/`), lefthook (`lefthook.yml`), pre-commit (`.pre-commit-config.yaml`), nano-staged / lint-staged config, or a bare `.git/hooks/pre-commit`. Use that one. With none, use a native `core.hooksPath` directory (`.githooks/`) so the hook is versioned.
 
-Done when you can name the runner and its config file.
+Then list the repo's source extensions (`git ls-files | sed -n 's/.*\.//p' | sort | uniq -c | sort -rn`) and compare them with `SOURCE_EXT` in the script. Add each source language it misses (QML, for one, is easy to overlook).
+
+Done when you can name the runner and its config file, and every source extension in the repo is covered or deliberately excluded.
 
 ### 2. Install the script
 
@@ -25,7 +27,7 @@ Done when it runs from the repo root.
 
 ### 3. Audit existing files
 
-Run `scripts/check-file-size.sh --all`. Every offender would block its next edit. Show the list to the user and ask, per file: split now, or grandfather it in `.file-size-guard-ignore` (one glob per line, `#` comments).
+Run `scripts/check-file-size.sh --all`; it reads the git index, so stage changes to see their new sizes. Every offender would block its next edit. Show the list to the user and ask, per file: split now, or grandfather it in `.file-size-guard-ignore` (one glob per line, `#` comments).
 
 Done when `--all` exits 0, or the user has decided on every listed file.
 
