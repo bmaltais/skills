@@ -1,0 +1,3 @@
+interface:
+  display_name: "Velocity Audit"
+  short_description: "Audit 24h of work for bottlenecks and propose fixes"
