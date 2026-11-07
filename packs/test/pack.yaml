@@ -1,7 +1,9 @@
 name: test
 repos:
-    - name: bmaltais-skills
-      url: https://github.com/bmaltais/skills
+    - name: mattpocock-skills
+      url: https://github.com/mattpocock/skills
 skills:
-    - bmaltais-skills/address-and-merge
-    - bmaltais-skills/brainstorming
+    - mattpocock-skills/skills/engineering/grill-with-docs
+    - mattpocock-skills/skills/engineering/wayfinder
+    - mattpocock-skills/skills/productivity/grill-me
+    - mattpocock-skills/skills/productivity/grilling
