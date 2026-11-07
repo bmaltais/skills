@@ -1,0 +1,11 @@
+name: test2
+repos:
+    - name: JuliusBrussee-caveman
+      url: https://github.com/JuliusBrussee/caveman
+skills:
+    - JuliusBrussee-caveman/plugins/caveman/skills/cavecrew
+    - JuliusBrussee-caveman/plugins/caveman/skills/caveman
+    - JuliusBrussee-caveman/plugins/caveman/skills/caveman-compress
+    - JuliusBrussee-caveman/plugins/caveman/skills/caveman-stats
+    - JuliusBrussee-caveman/plugins/caveman/skills/megacave
+    - JuliusBrussee-caveman/plugins/caveman/skills/ultracave
