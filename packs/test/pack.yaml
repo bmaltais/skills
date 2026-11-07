@@ -1,9 +1,11 @@
 name: test
 repos:
-    - name: mattpocock-skills
-      url: https://github.com/mattpocock/skills
+    - name: JuliusBrussee-caveman
+      url: https://github.com/JuliusBrussee/caveman
 skills:
-    - mattpocock-skills/skills/engineering/grill-with-docs
-    - mattpocock-skills/skills/engineering/wayfinder
-    - mattpocock-skills/skills/productivity/grill-me
-    - mattpocock-skills/skills/productivity/grilling
+    - JuliusBrussee-caveman/plugins/caveman/skills/cavecrew
+    - JuliusBrussee-caveman/plugins/caveman/skills/caveman
+    - JuliusBrussee-caveman/plugins/caveman/skills/caveman-compress
+    - JuliusBrussee-caveman/plugins/caveman/skills/caveman-stats
+    - JuliusBrussee-caveman/plugins/caveman/skills/megacave
+    - JuliusBrussee-caveman/plugins/caveman/skills/ultracave
