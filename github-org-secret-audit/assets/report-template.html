@@ -1,0 +1,121 @@
+<!doctype html>
+<!-- Template for the github-org-secret-audit skill. Replace every {{PLACEHOLDER}}; duplicate/remove finding blocks as needed.
+     Keep the "Repository inventory" <section><h2> exactly as-is: evidence.ps1 inserts the appendix before it. Never include secret values. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ORG}} - Secret Exposure Audit</title>
+  <style>
+    :root { --ink:#172033; --muted:#5b6475; --line:#dfe3ea; --navy:#17365d; --red:#a61b1b; --amber:#9a6700; --green:#176b45; --paper:#fff; --wash:#f5f7fa; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--wash); line-height:1.55; }
+    header { background:var(--navy); color:white; padding:42px max(24px,calc((100% - 1180px)/2)); }
+    header h1 { margin:0 0 8px; font-size:34px; } header p { margin:4px 0; color:#dce7f4; }
+    main { max-width:1180px; margin:auto; padding:28px 24px 60px; }
+    .badge { display:inline-block; margin:12px 8px 0 0; border-radius:999px; padding:5px 10px; background:#edf3fa; color:#17365d; font-weight:700; font-size:13px; }
+    .badge.high { background:#fdeaea; color:var(--red); } .badge.medium { background:#fff3d6; color:var(--amber); } .badge.low { background:#e6f4ec; color:var(--green); }
+    section { background:var(--paper); border:1px solid var(--line); border-radius:10px; margin:20px 0; padding:24px; }
+    h2 { margin-top:0; border-bottom:2px solid var(--line); padding-bottom:8px; }
+    h3 { margin-bottom:8px; } a { color:#185da8; }
+    table { width:100%; border-collapse:collapse; font-size:14px; } th,td { text-align:left; vertical-align:top; border-bottom:1px solid var(--line); padding:9px 8px; }
+    th { background:#eef2f7; } tr:hover td { background:#fafbfc; }
+    .finding { border-left:5px solid var(--amber); padding:14px 16px; margin:14px 0; background:#fffdfa; } .finding.high { border-left-color:var(--red); } .finding.low { border-left-color:var(--green); background:#fbfefc; }
+    .meta { color:var(--muted); font-size:13px; } .severity { font-weight:800; } .severity.high { color:var(--red); } .severity.medium { color:var(--amber); } .severity.low { color:var(--green); }
+    code { background:#eef1f5; border-radius:4px; padding:2px 5px; }
+    .callout { border-radius:8px; padding:14px 16px; background:#eef6ff; border:1px solid #cbdcf2; margin:12px 0; } .callout.warn { background:#fff7e8; border-color:#edcf91; }
+    .inventory { max-height:520px; overflow:auto; } .inventory table { min-width:860px; }
+    footer { color:var(--muted); text-align:center; padding:20px; font-size:13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Secret Exposure Audit</h1>
+    <p>GitHub organization: <strong>{{ORG}}</strong></p>
+    <p>Audit: {{DATE}} | Full-history scan: {{N_REPOS}} repositories</p>
+  </header>
+  <main>
+    <span class="badge">{{N_REPOS}} repositories</span>
+    <span class="badge">{{N_SOURCE}} source / {{N_FORKS}} forks</span>
+    <span class="badge">{{N_ARCHIVED}} archived</span>
+    <span class="badge high">{{N_HIGH}} high-severity findings</span>
+    <span class="badge medium">{{N_MEDIUM}} medium-severity findings</span>
+    <span class="badge low">{{N_LOW}} low / informational</span>
+
+    <section>
+      <h2>Executive summary</h2>
+      <p>{{SUMMARY: how many grouped findings, the most serious ones, and the statement that no credential was tested.}}</p>
+      <div class="callout warn"><strong>Immediate priority:</strong> {{WHAT TO ROTATE FIRST}}. Avoid exposing the credential values during incident handling.</div>
+      <div class="callout"><strong>Good news:</strong> {{CLEAN REPOS / ALREADY-REMOVED ITEMS}}</div>
+    </section>
+
+    <section>
+      <h2>Findings</h2>
+      <div class="callout"><strong>Evidence links:</strong> see <a href="#evidence">Appendix A</a> for every value still on a default branch, and Appendix B for every commit, file and line in history. Each <code>sid</code> is the first 10 hex characters of the value's SHA-256 hash. It lets you correlate repeated values without revealing them.</div>
+
+      <div class="finding high">
+        <h3>#1 - {{TITLE}}</h3>
+        <p><span class="severity high">HIGH</span> | Confidence: {{N}}/10 | Status: {{AT HEAD / HISTORY ONLY}}; validity untested</p>
+        <p><strong>Repository:</strong> <a href="https://github.com/{{ORG}}/{{REPO}}">{{REPO}}</a><br>
+        <strong>Location:</strong> <a href="https://github.com/{{ORG}}/{{REPO}}/blob/{{FULL_SHA}}/{{PATH}}#L{{LINE}}">{{PATH}}, line {{LINE}}</a><br>
+        <strong>Evidence:</strong> <code>{{key}} = "[REDACTED]"</code>; commit <code>{{SHORT_SHA}}</code>; sid <code>{{SID}}</code></p>
+        <p>{{WHY IT MATTERS}}</p>
+        <p><strong>Recommended action:</strong> {{ROTATE, INVESTIGATE, REMOVE, PREVENT}}</p>
+      </div>
+      <!-- Medium: class="finding" + severity medium. Low: class="finding low" + severity low. Use tables for multi-value groups. -->
+    </section>
+
+    <section>
+      <h2>Scope and methodology</h2>
+      <ul>
+        <li><strong>Repository inventory:</strong> GitHub REST API (<code>type=all</code>, {{AUTH STATUS}}). {{COUNTS}}.</li>
+        <li><strong>Repository copies:</strong> <code>git clone --mirror</code>; none shallow; {{N_COMMITS}} reachable commits.</li>
+        <li><strong>Automated scanning:</strong> Gitleaks {{VERSION}}, default rules, <code>git</code> mode with <code>--all --full-history -m --root --no-ext-diff --no-textconv</code>; inline allow comments ignored; {{N_SCANNED}} patch-bearing commits.</li>
+        <li><strong>Verification:</strong> exit code 0 or 2, parseable JSON and a commit count for every repository; {{OK}}/{{N_REPOS}} passed; scan time {{TIME}}.</li>
+        <li><strong>Manual review:</strong> sensitive file types in history, literals missed by the rules, state-file attribute profiling, value presence on branch tips, and PII/ID counts.</li>
+        <li><strong>Secret handling:</strong> no secret values are reproduced; values are identified by sid only.</li>
+      </ul>
+      <p class="meta">Limitations: {{STANDARD LIMITATIONS FROM TRIAGE GUIDE}}</p>
+    </section>
+
+    <section>
+      <h2>Automated scan disposition</h2>
+      <table><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>
+        <tr><td>Repositories mirrored / scanned successfully</td><td><strong>{{OK}} / {{N_REPOS}}</strong></td></tr>
+        <tr><td>Reachable / patch-bearing commits</td><td><strong>{{N_COMMITS}} / {{N_SCANNED}}</strong></td></tr>
+        <tr><td>Raw Gitleaks matches</td><td><strong>{{N_RAW}}</strong> across {{N_REPOS_WITH_MATCHES}} repositories</td></tr>
+        <tr><td>Grouped findings</td><td><strong>{{N_FINDINGS}}</strong></td></tr>
+      </tbody></table>
+      <h3>Raw scanner matches by repository</h3>
+      <table><thead><tr><th>Repository</th><th>Matches</th><th>Classification</th></tr></thead><tbody>
+        <tr><td>{{REPO}}</td><td>{{N}}</td><td>{{CLASSIFICATION}}</td></tr>
+      </tbody></table>
+    </section>
+
+    <section>
+      <h2>Remediation plan</h2>
+      <ol>
+        <li><strong>Contain:</strong> rotate or revoke the exposed credentials, coordinating with dependent workloads.</li>
+        <li><strong>Investigate:</strong> review activity, sign-in and service logs from the commit dates onward.</li>
+        <li><strong>Assess privacy impact:</strong> {{IF PII FOUND}}</li>
+        <li><strong>Remove:</strong> after rotation, rewrite history with the repository owners and delete stale branches. History cleanup alone does not revoke a credential.</li>
+        <li><strong>Prevent recurrence:</strong> enable GitHub secret scanning and push protection, add <code>.gitignore</code> rules for state, tfvars and .env files, use Key Vault and OIDC, and add Gitleaks to CI.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Repository inventory</h2>
+      <p>All repositories returned by the organization API were mirrored and scanned across available refs. A clean result does not establish that a repository is free of sensitive information.</p>
+      <div class="inventory">
+        <table>
+          <thead><tr><th>#</th><th>Repository</th><th>Fork</th><th>Archived</th><th>Default branch</th><th>Commits (reachable / scanned)</th><th>Raw matches</th></tr></thead>
+          <tbody>
+{{ONE ROW PER REPO FROM repos.json + scan-summary.json}}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <footer>Prepared as a defensive security report. Sensitive values are redacted.</footer>
+</body>
+</html>
